@@ -1,0 +1,437 @@
+nohup: ignoring input
+2025-05-21 00:52:36,651 - INFO - Serving on http://127.0.0.1:5000
+2025-05-21 00:52:44,362 - INFO - Paginação Relatórios: Itens totais=0, Páginas=1, Página Atual=1, Offset=0, Itens na Página=0
+2025-05-21 00:52:44,362 - INFO - Dados de relatório calculados para user554792443554. Período: 2025-05-01 a 2025-05-21
+2025-05-21 00:52:52,996 - INFO - Buscados 0 itens (receitas) para página 1/1 (Total: 0). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 00:52:54,596 - INFO - Buscados 1 itens (variaveis) para página 1/1 (Total: 1)
+2025-05-21 00:52:56,515 - INFO - Paginação Relatórios: Itens totais=1, Páginas=1, Página Atual=1, Offset=0, Itens na Página=1
+2025-05-21 00:52:56,515 - INFO - Dados de relatório calculados para user554792443554. Período: 2025-05-01 a 2025-05-21
+2025-05-21 00:53:02,514 - INFO - Acessando dashboard: Schema user554792443554, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 00:53:02,525 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 00:53:02,530 - INFO - Dashboard data calculated for schema user554792443554. Meta ativa: Não
+2025-05-21 01:18:14,392 - INFO - Acessando dashboard: Schema user5215568782114, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 01:18:14,401 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 25360.20
+2025-05-21 01:18:14,405 - INFO - Dashboard data calculated for schema user5215568782114. Meta ativa: Sim
+2025-05-21 01:29:01,777 - INFO - Buscados 24 itens (variaveis) para página 1/1 (Total: 24)
+2025-05-21 01:29:04,778 - INFO - Paginação Relatórios: Itens totais=24, Páginas=1, Página Atual=1, Offset=0, Itens na Página=24
+2025-05-21 01:29:04,778 - INFO - Dados de relatório calculados para user5215530466251. Período: 2025-05-01 a 2025-05-21
+2025-05-21 01:29:10,392 - INFO - Acessando dashboard: Schema user5215530466251, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 01:29:10,402 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 6294.00
+2025-05-21 01:29:10,406 - INFO - Dashboard data calculated for schema user5215530466251. Meta ativa: Não
+2025-05-21 01:29:13,854 - INFO - Acessando dashboard: Schema user5215530466251, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 01:29:13,864 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 6294.00
+2025-05-21 01:29:13,867 - INFO - Dashboard data calculated for schema user5215530466251. Meta ativa: Não
+2025-05-21 02:26:49,321 - INFO - Login bem-sucedido: danymerigo@hotmail.com, Schema: user5215531325644
+2025-05-21 02:26:49,472 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 02:26:49,482 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 02:26:49,486 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 02:27:20,640 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 02:27:29,019 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 02:27:50,508 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 02:27:50,519 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 02:27:50,523 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 02:28:35,237 - WARNING - Tentativa de login falhou para: j.ker@me.com (email não cadastrado ou senha incorreta)
+2025-05-21 02:29:06,288 - INFO - Novo acesso dashboard criado para email: j.ker@me.com, ID Assinatura: 74
+2025-05-21 02:29:11,458 - INFO - Login bem-sucedido: j.ker@me.com, Schema: user5215571129519
+2025-05-21 02:29:11,602 - INFO - Acessando dashboard: Schema user5215571129519, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 02:29:11,614 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 02:29:11,619 - INFO - Dashboard data calculated for schema user5215571129519. Meta ativa: Não
+2025-05-21 02:33:06,560 - INFO - Acessando dashboard: Schema user554792443554, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 02:33:06,570 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 02:33:06,573 - INFO - Dashboard data calculated for schema user554792443554. Meta ativa: Não
+2025-05-21 03:09:34,081 - INFO - Acessando dashboard: Schema user5571129519, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 03:09:34,087 - ERROR - Erro ao buscar categorias do tipo receita: relation "user5571129519.categorias" does not exist
+LINE 3:             FROM "user5571129519".categorias 
+                         ^
+
+2025-05-21 03:09:34,087 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:09:34,088 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:09:34,088 - ERROR - Erro DB ao carregar dashboard para schema user5571129519, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:13:45,325 - ERROR - Erro DB /relatorios user5571129519: relation "user5571129519.outras_receitas" does not exist
+LINE 1: SELECT DISTINCT categoria FROM "user5571129519".outras_recei...
+                                       ^
+
+2025-05-21 03:21:25,965 - INFO - Buscados 4 itens (variaveis) para página 1/1 (Total: 4)
+2025-05-21 03:37:19,100 - INFO - Acessando dashboard: Schema user5217711297973, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 03:37:19,110 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 439.00
+2025-05-21 03:37:19,114 - INFO - Dashboard data calculated for schema user5217711297973. Meta ativa: Não
+2025-05-21 03:38:22,231 - WARNING - Tentativa de login falhou para: marianoysita@hotmail.com (email não cadastrado ou senha incorreta)
+2025-05-21 03:39:02,127 - INFO - Novo acesso dashboard criado para email: marianoysita@hotmail.com, ID Assinatura: 102
+2025-05-21 03:39:06,951 - INFO - Login bem-sucedido: marianoysita@hotmail.com, Schema: user8713462966
+2025-05-21 03:39:07,081 - INFO - Acessando dashboard: Schema user8713462966, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 03:39:07,089 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 03:39:07,089 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:39:07,090 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:39:07,090 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:06,362 - INFO - Acessando dashboard: Schema user8713462966, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 03:50:06,369 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 03:50:06,369 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:06,370 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:06,370 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:11,534 - INFO - Acessando dashboard: Schema user8713462966, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 03:50:11,540 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 03:50:11,541 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:11,541 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:11,541 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:18,361 - INFO - Acessando dashboard: Schema user8713462966, Período: 7d (2025-05-15 a 2025-05-21)
+2025-05-21 03:50:18,367 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 03:50:18,368 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:18,368 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:50:18,368 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período 7d: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:51:03,610 - ERROR - Erro DB salvar meta user8713462966: relation "user8713462966.metas" does not exist
+LINE 1: SELECT id FROM "user8713462966".metas WHERE status = 'ativa'...
+                       ^
+
+2025-05-21 03:51:04,038 - INFO - Acessando dashboard: Schema user8713462966, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 03:51:04,045 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 03:51:04,045 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:51:04,046 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 03:51:04,046 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:04:04,709 - INFO - Acessando dashboard: Schema user8713462966, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:04:04,715 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 04:04:04,716 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:04:04,716 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:04:04,717 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:04:07,310 - INFO - Acessando dashboard: Schema user8713462966, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:04:07,316 - ERROR - Erro ao buscar categorias do tipo receita: relation "user8713462966.categorias" does not exist
+LINE 3:             FROM "user8713462966".categorias 
+                         ^
+
+2025-05-21 04:04:07,317 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:04:07,317 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:04:07,317 - ERROR - Erro DB ao carregar dashboard para schema user8713462966, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 04:26:13,461 - INFO - Buscados 8 itens (variaveis) para página 1/1 (Total: 8)
+2025-05-21 04:26:15,972 - INFO - Buscados 8 itens (variaveis) para página 1/1 (Total: 8)
+2025-05-21 04:31:27,618 - INFO - Acessando dashboard: Schema user5219931601125, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:31:27,628 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 208.00
+2025-05-21 04:31:27,632 - INFO - Dashboard data calculated for schema user5219931601125. Meta ativa: Não
+2025-05-21 04:54:05,588 - INFO - Novo acesso dashboard criado para email: ulisesmartinherrera@gmail.com, ID Assinatura: 105
+2025-05-21 04:54:34,858 - INFO - Login bem-sucedido: ulisesmartinherrera@gmail.com, Schema: user5212221327910
+2025-05-21 04:54:35,046 - INFO - Acessando dashboard: Schema user5212221327910, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:54:35,057 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 2530.00
+2025-05-21 04:54:35,061 - INFO - Dashboard data calculated for schema user5212221327910. Meta ativa: Não
+2025-05-21 04:55:32,419 - INFO - Acessando dashboard: Schema user5212221327910, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:55:32,428 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 2530.00
+2025-05-21 04:55:32,431 - INFO - Dashboard data calculated for schema user5212221327910. Meta ativa: Sim
+2025-05-21 04:56:48,813 - INFO - Acessando dashboard: Schema user5212221327910, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:56:48,822 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 2530.00
+2025-05-21 04:56:48,826 - INFO - Dashboard data calculated for schema user5212221327910. Meta ativa: Sim
+2025-05-21 04:57:04,724 - INFO - Buscados 1 itens (variaveis) para página 1/1 (Total: 1)
+2025-05-21 04:57:11,293 - INFO - Buscados 1 itens (receitas) para página 1/1 (Total: 1). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 04:57:19,870 - INFO - Paginação Relatórios: Itens totais=1, Páginas=1, Página Atual=1, Offset=0, Itens na Página=1
+2025-05-21 04:57:19,870 - INFO - Dados de relatório calculados para user5212221327910. Período: 2025-05-01 a 2025-05-21
+2025-05-21 04:57:33,398 - INFO - Acessando dashboard: Schema user5212221327910, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 04:57:33,409 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 2530.00
+2025-05-21 04:57:33,413 - INFO - Dashboard data calculated for schema user5212221327910. Meta ativa: Sim
+2025-05-21 06:15:17,166 - WARNING - Tentativa de login falhou para: jorge.qr1306@gmail.com (email não cadastrado ou senha incorreta)
+2025-05-21 06:15:39,179 - INFO - Novo acesso dashboard criado para email: jorge.qr1306@gmail.com, ID Assinatura: 106
+2025-05-21 06:15:42,160 - INFO - Login bem-sucedido: jorge.qr1306@gmail.com, Schema: user5215566176828
+2025-05-21 06:15:42,279 - INFO - Acessando dashboard: Schema user5215566176828, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 06:15:42,289 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 06:15:42,292 - INFO - Dashboard data calculated for schema user5215566176828. Meta ativa: Não
+2025-05-21 06:15:59,962 - INFO - Paginação Relatórios: Itens totais=0, Páginas=1, Página Atual=1, Offset=0, Itens na Página=0
+2025-05-21 06:15:59,962 - INFO - Dados de relatório calculados para user5215566176828. Período: 2025-05-01 a 2025-05-21
+2025-05-21 06:46:38,138 - INFO - Paginação Relatórios: Itens totais=2, Páginas=1, Página Atual=1, Offset=0, Itens na Página=2
+2025-05-21 06:46:38,138 - INFO - Dados de relatório calculados para user5215566176828. Período: 2025-05-01 a 2025-05-21
+2025-05-21 11:40:55,295 - INFO - Acessando dashboard: Schema user5215568782114, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 11:40:55,312 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 25360.20
+2025-05-21 11:40:55,318 - INFO - Dashboard data calculated for schema user5215568782114. Meta ativa: Sim
+2025-05-21 11:58:47,605 - INFO - Paginação Relatórios: Itens totais=6, Páginas=1, Página Atual=1, Offset=0, Itens na Página=6
+2025-05-21 11:58:47,605 - INFO - Dados de relatório calculados para user56991376130. Período: 2025-05-01 a 2025-05-21
+2025-05-21 11:58:56,939 - INFO - Buscados 1 itens (receitas) para página 1/1 (Total: 1). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 12:34:51,679 - INFO - Acessando dashboard: Schema user5571129519, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 12:34:51,687 - ERROR - Erro ao buscar categorias do tipo receita: relation "user5571129519.categorias" does not exist
+LINE 3:             FROM "user5571129519".categorias 
+                         ^
+
+2025-05-21 12:34:51,687 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 12:34:51,688 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 12:34:51,688 - ERROR - Erro DB ao carregar dashboard para schema user5571129519, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 13:15:35,427 - INFO - Acessando dashboard: Schema user5571129519, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 13:15:35,433 - ERROR - Erro ao buscar categorias do tipo receita: relation "user5571129519.categorias" does not exist
+LINE 3:             FROM "user5571129519".categorias 
+                         ^
+
+2025-05-21 13:15:35,433 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 13:15:35,434 - ERROR - Erro ao buscar categorias do tipo gasto_fixo: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 13:15:35,434 - ERROR - Erro DB ao carregar dashboard para schema user5571129519, período mes_atual: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 13:15:42,414 - ERROR - Erro ao buscar categorias do tipo gasto_variavel: relation "user5571129519.categorias" does not exist
+LINE 3:             FROM "user5571129519".categorias 
+                         ^
+
+2025-05-21 13:15:42,414 - ERROR - Erro DB /gastos user5571129519, Tipo: variaveis, Página: 1: current transaction is aborted, commands ignored until end of transaction block
+
+2025-05-21 13:15:46,114 - ERROR - Erro DB /lembretes user5571129519: relation "user5571129519.lembretes" does not exist
+LINE 1: ... descripcion, data, repetir, tipo_repeticion FROM "user55711...
+                                                             ^
+
+2025-05-21 13:15:52,106 - WARNING - Tentativa de login falhou para: j.ker@me.com (email não cadastrado ou senha incorreta)
+2025-05-21 13:16:19,198 - WARNING - Tentativa de login falhou para: j.ker@me.com (email não cadastrado ou senha incorreta)
+2025-05-21 13:16:27,221 - WARNING - Tentativa de login falhou para: j.ker@me.com (email não cadastrado ou senha incorreta)
+2025-05-21 13:16:48,713 - WARNING - Tentativa de login falhou para: j.ker@me.com (email não cadastrado ou senha incorreta)
+2025-05-21 13:27:43,788 - INFO - Acessando dashboard: Schema user5215568782114, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 13:27:43,799 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 25360.20
+2025-05-21 13:27:43,803 - INFO - Dashboard data calculated for schema user5215568782114. Meta ativa: Sim
+2025-05-21 14:54:16,194 - INFO - Login bem-sucedido: lciemmanuel07@gmail.com, Schema: user5212224223124
+2025-05-21 14:54:16,369 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 14:54:16,380 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 14:54:16,384 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 14:54:16,841 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 14:54:16,850 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 14:54:16,854 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 14:54:31,032 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 14:54:31,042 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 14:54:31,045 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 14:57:09,225 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 14:57:09,236 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 14:57:09,240 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 14:57:46,464 - INFO - Acessando dashboard: Schema user5212224223124, Período: 15d (2025-05-07 a 2025-05-21)
+2025-05-21 14:57:46,476 - INFO - Dashboard: Gastos Fixos (período 2025-05-07-2025-05-21): 0.00
+2025-05-21 14:57:46,480 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 14:57:48,218 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 14:57:48,230 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 14:57:48,234 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 14:58:15,840 - INFO - Paginação Relatórios: Itens totais=4, Páginas=1, Página Atual=1, Offset=0, Itens na Página=4
+2025-05-21 14:58:15,840 - INFO - Dados de relatório calculados para user5212224223124. Período: 2025-05-01 a 2025-05-21
+2025-05-21 14:58:40,592 - INFO - Categorias buscadas para schema user5212224223124: 23 encontradas.
+2025-05-21 14:58:52,891 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 14:58:52,901 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 14:58:52,905 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 15:04:20,376 - WARNING - Tentativa de login falhou para: luisen.sanchezmolina@gmail.com (email não cadastrado ou senha incorreta)
+2025-05-21 15:04:32,075 - WARNING - Tentativa de login falhou para: luisen.sanchezmolina@gmail.com (email não cadastrado ou senha incorreta)
+2025-05-21 15:04:52,340 - INFO - Novo acesso dashboard criado para email: luisen.sanchezmolina@gmail.com, ID Assinatura: 107
+2025-05-21 15:05:00,484 - INFO - Login bem-sucedido: luisen.sanchezmolina@gmail.com, Schema: user5213311559180
+2025-05-21 15:05:00,603 - INFO - Acessando dashboard: Schema user5213311559180, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 15:05:00,614 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 15:05:00,617 - INFO - Dashboard data calculated for schema user5213311559180. Meta ativa: Não
+2025-05-21 15:05:34,322 - INFO - Acessando dashboard: Schema user5213311559180, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 15:05:34,333 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 15:05:34,336 - INFO - Dashboard data calculated for schema user5213311559180. Meta ativa: Não
+2025-05-21 15:07:17,334 - INFO - Acessando dashboard: Schema user5213311559180, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 15:07:17,344 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 15:07:17,348 - INFO - Dashboard data calculated for schema user5213311559180. Meta ativa: Não
+2025-05-21 15:08:51,514 - INFO - Paginação Relatórios: Itens totais=4, Páginas=1, Página Atual=1, Offset=0, Itens na Página=4
+2025-05-21 15:08:51,514 - INFO - Dados de relatório calculados para user5212224223124. Período: 2025-05-01 a 2025-05-21
+2025-05-21 15:09:29,880 - INFO - Buscados 2 itens (receitas) para página 1/1 (Total: 2). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 15:09:36,016 - INFO - Buscados 4 itens (variaveis) para página 1/1 (Total: 4)
+2025-05-21 15:09:39,277 - INFO - Acessando dashboard: Schema user5212224223124, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 15:09:39,286 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 15:09:39,290 - INFO - Dashboard data calculated for schema user5212224223124. Meta ativa: Não
+2025-05-21 16:32:43,204 - INFO - Novo acesso dashboard criado para email: jglzar@gmail.com, ID Assinatura: 108
+2025-05-21 16:33:02,375 - INFO - Login bem-sucedido: jglzar@gmail.com, Schema: user5214792290008
+2025-05-21 16:33:02,536 - INFO - Acessando dashboard: Schema user5214792290008, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 16:33:02,545 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 16:33:02,549 - INFO - Dashboard data calculated for schema user5214792290008. Meta ativa: Não
+2025-05-21 16:37:27,399 - INFO - Acessando dashboard: Schema user5214792290008, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 16:37:27,410 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 16:37:27,413 - INFO - Dashboard data calculated for schema user5214792290008. Meta ativa: Não
+2025-05-21 17:14:08,422 - INFO - Acessando dashboard: Schema user5212381040035, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 17:14:08,434 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 2000.00
+2025-05-21 17:14:08,439 - INFO - Dashboard data calculated for schema user5212381040035. Meta ativa: Não
+2025-05-21 17:43:17,249 - WARNING - Tentativa de login falhou para: sistem.inteligentes@gmail.com (email não cadastrado ou senha incorreta)
+2025-05-21 17:57:55,241 - INFO - Acessando dashboard: Schema user5219931601125, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 17:57:55,251 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 208.00
+2025-05-21 17:57:55,254 - INFO - Dashboard data calculated for schema user5219931601125. Meta ativa: Não
+2025-05-21 18:09:09,389 - INFO - Novo acesso dashboard criado para email: rafael.lopez94@hotmail.com, ID Assinatura: 109
+2025-05-21 18:09:15,889 - INFO - Login bem-sucedido: rafael.lopez94@hotmail.com, Schema: user5215566285028
+2025-05-21 18:09:16,132 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:09:16,142 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 18:09:16,145 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:09:26,354 - INFO - Acessando dashboard: Schema user5215566285028, Período: 7d (2025-05-15 a 2025-05-21)
+2025-05-21 18:09:26,364 - INFO - Dashboard: Gastos Fixos (período 2025-05-15-2025-05-21): 0.00
+2025-05-21 18:09:26,367 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:09:28,068 - INFO - Acessando dashboard: Schema user5215566285028, Período: 15d (2025-05-07 a 2025-05-21)
+2025-05-21 18:09:28,078 - INFO - Dashboard: Gastos Fixos (período 2025-05-07-2025-05-21): 0.00
+2025-05-21 18:09:28,082 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:09:31,794 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:09:31,803 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 18:09:31,806 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:10:51,177 - INFO - Buscados 0 itens (receitas) para página 1/1 (Total: 0). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 18:11:26,545 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:11:26,555 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 18:11:26,559 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:16:30,032 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:16:30,041 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1679.00
+2025-05-21 18:16:30,045 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:19:28,236 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:19:28,247 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:28,247 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:28,247 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1679.00
+2025-05-21 18:19:28,251 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:19:45,171 - INFO - Acessando dashboard: Schema user5215566285028, Período: 15d (2025-05-07 a 2025-05-21)
+2025-05-21 18:19:45,182 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:45,182 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:45,182 - INFO - Dashboard: Gastos Fixos (período 2025-05-07-2025-05-21): 1679.00
+2025-05-21 18:19:45,186 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:19:48,603 - INFO - Acessando dashboard: Schema user5215566285028, Período: 7d (2025-05-15 a 2025-05-21)
+2025-05-21 18:19:48,614 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:48,614 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:48,614 - INFO - Dashboard: Gastos Fixos (período 2025-05-15-2025-05-21): 1679.00
+2025-05-21 18:19:48,617 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:19:52,268 - INFO - Acessando dashboard: Schema user5215566285028, Período: 15d (2025-05-07 a 2025-05-21)
+2025-05-21 18:19:52,280 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:52,281 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:52,281 - INFO - Dashboard: Gastos Fixos (período 2025-05-07-2025-05-21): 1679.00
+2025-05-21 18:19:52,286 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:19:54,615 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:19:54,625 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:54,625 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:19:54,625 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1679.00
+2025-05-21 18:19:54,629 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:23:18,142 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:23:18,154 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:23:18,154 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:23:18,154 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1679.00
+2025-05-21 18:23:18,158 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:27:35,997 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:27:36,006 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:27:36,006 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:27:36,006 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1679.00
+2025-05-21 18:27:36,009 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:31:50,680 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:31:50,690 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:31:50,690 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:31:50,690 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1798.00
+2025-05-21 18:31:50,693 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:33:34,586 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:33:34,596 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:33:34,596 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:33:34,596 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1798.00
+2025-05-21 18:33:34,600 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Não
+2025-05-21 18:38:40,886 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:38:40,901 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:38:40,901 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:38:40,901 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1798.00
+2025-05-21 18:38:40,905 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Sim
+2025-05-21 18:39:35,965 - INFO - Lembrete 'Pago Duster' adicionado via modal (repetir=True, tipo=mensal). Schema: user5215566285028
+2025-05-21 18:39:36,055 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:39:36,066 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:39:36,066 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:39:36,066 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 1798.00
+2025-05-21 18:39:36,069 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Sim
+2025-05-21 18:44:28,277 - INFO - Login bem-sucedido: danymerigo@hotmail.com, Schema: user5215531325644
+2025-05-21 18:44:28,498 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:44:28,509 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 18:44:28,513 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 18:44:39,777 - INFO - Buscados 9 itens (variaveis) para página 1/1 (Total: 9)
+2025-05-21 18:44:41,933 - INFO - Buscados 7 itens (fixos) para página 1/1 (Total: 7)
+2025-05-21 18:48:36,469 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:48:36,482 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:48:36,483 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:48:36,483 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 4127.58
+2025-05-21 18:48:36,487 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Sim
+2025-05-21 18:48:49,213 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:48:49,223 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:48:49,223 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:48:49,223 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 4127.58
+2025-05-21 18:48:49,226 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Sim
+2025-05-21 18:50:35,923 - INFO - Acessando dashboard: Schema user5213311559180, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:50:35,933 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 18:50:35,937 - INFO - Dashboard data calculated for schema user5213311559180. Meta ativa: Não
+2025-05-21 18:55:45,600 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:55:45,611 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:55:45,611 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:55:45,611 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 4127.58
+2025-05-21 18:55:45,615 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Sim
+2025-05-21 18:56:04,399 - INFO - Buscados 9 itens (variaveis) para página 1/1 (Total: 9)
+2025-05-21 18:56:10,835 - INFO - Buscados 6 itens (fixos) para página 1/1 (Total: 6)
+2025-05-21 18:56:19,542 - INFO - Buscados 1 itens (receitas) para página 1/1 (Total: 1). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 18:56:29,860 - INFO - Paginação Relatórios: Itens totais=9, Páginas=1, Página Atual=1, Offset=0, Itens na Página=9
+2025-05-21 18:56:29,861 - INFO - Dados de relatório calculados para user5215566285028. Período: 2025-05-01 a 2025-05-21
+2025-05-21 18:56:46,185 - INFO - Categorias buscadas para schema user5215566285028: 23 encontradas.
+2025-05-21 18:57:02,861 - INFO - Acessando dashboard: Schema user5215566285028, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 18:57:02,872 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:57:02,872 - WARNING - Recorrência desconhecida. Original: 'Quincenal', Processada como: 'quincenal'. Nenhuma regra definida corresponde.
+2025-05-21 18:57:02,872 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 4127.58
+2025-05-21 18:57:02,878 - INFO - Dashboard data calculated for schema user5215566285028. Meta ativa: Sim
+2025-05-21 19:05:37,625 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 19:05:37,636 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 19:05:37,640 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 19:05:47,868 - INFO - Buscados 9 itens (variaveis) para página 1/1 (Total: 9)
+2025-05-21 19:06:12,061 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 19:06:20,839 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 19:06:28,872 - INFO - Buscados 9 itens (variaveis) para página 1/1 (Total: 9)
+2025-05-21 19:07:25,831 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 19:08:04,549 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 19:08:52,408 - INFO - Categorias buscadas para schema user5215531325644: 40 encontradas.
+2025-05-21 19:09:00,404 - INFO - Categoria ID 432 ('Tarjeta de crédito') excluída do schema user5215531325644
+2025-05-21 19:09:00,506 - INFO - Categorias buscadas para schema user5215531325644: 39 encontradas.
+2025-05-21 19:09:13,836 - INFO - Categoria ID 189 ('UP - Universidad') excluída do schema user5215531325644
+2025-05-21 19:09:14,025 - INFO - Categorias buscadas para schema user5215531325644: 38 encontradas.
+2025-05-21 19:09:47,664 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 19:09:47,674 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 19:09:47,678 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 19:09:53,074 - INFO - Acessando dashboard: Schema user5215531325644, Período: 7d (2025-05-15 a 2025-05-21)
+2025-05-21 19:09:53,084 - INFO - Dashboard: Gastos Fixos (período 2025-05-15-2025-05-21): 25476.60
+2025-05-21 19:09:53,088 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 19:09:58,718 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 19:09:58,726 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 19:09:58,730 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 19:10:22,175 - INFO - Buscados 3 itens (receitas) para página 1/1 (Total: 3). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 19:11:17,445 - INFO - Acessando dashboard: Schema user5215531325644, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 19:11:17,456 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 36475.60
+2025-05-21 19:11:17,460 - INFO - Dashboard data calculated for schema user5215531325644. Meta ativa: Sim
+2025-05-21 19:11:20,225 - INFO - Buscados 3 itens (receitas) para página 1/1 (Total: 3). Filtros: {'data_inicio': None, 'data_fim': None, 'categoria_filtro': 'todas', 'sort_by': 'fecha_desc'}
+2025-05-21 19:58:03,171 - INFO - Acessando dashboard: Schema user5212221327910, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 19:58:03,184 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 11080.00
+2025-05-21 19:58:03,189 - INFO - Dashboard data calculated for schema user5212221327910. Meta ativa: Sim
+2025-05-21 21:27:24,539 - INFO - Acessando dashboard: Schema user554792443554, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 21:27:24,554 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 21:27:24,559 - INFO - Dashboard data calculated for schema user554792443554. Meta ativa: Não
+2025-05-21 21:27:30,369 - INFO - Acessando dashboard: Schema user554792443554, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 21:27:30,379 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 21:27:30,385 - INFO - Dashboard data calculated for schema user554792443554. Meta ativa: Não
+2025-05-21 22:06:48,459 - INFO - Acessando dashboard: Schema user5216161182172, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 22:06:48,470 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 22:06:48,475 - INFO - Dashboard data calculated for schema user5216161182172. Meta ativa: Não
+2025-05-21 22:08:16,676 - INFO - Acessando dashboard: Schema user5216161182172, Período: mes_atual (2025-05-01 a 2025-05-21)
+2025-05-21 22:08:16,687 - INFO - Dashboard: Gastos Fixos (período 2025-05-01-2025-05-21): 0.00
+2025-05-21 22:08:16,692 - INFO - Dashboard data calculated for schema user5216161182172. Meta ativa: Não

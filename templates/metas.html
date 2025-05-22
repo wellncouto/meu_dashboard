@@ -1,0 +1,71 @@
+{# Herda a estrutura do base.html #}
+{% extends 'base.html' %}
+
+{# Define o título específico desta página #}
+{% block title %}Metas Financeiras - Meu App Fin{% endblock %}
+
+{# Define a classe do body #}
+{% block body_class %}bg-gray-50{% endblock %}
+
+{# Conteúdo principal da página de Metas #}
+{% block content_body %}
+
+    {# Cabeçalho da Página #}
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Metas Financeiras</h2>
+        <p class="text-gray-600">Defina e acompanhe suas metas financeiras.</p>
+    </div>
+
+    {# Mensagens Flash #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg text-sm border
+                    {% if category == 'danger' %} bg-red-100 text-red-800 border-red-200
+                    {% elif category == 'success' %} bg-green-100 text-green-800 border-green-200
+                    {% elif category == 'warning' %} bg-yellow-100 text-yellow-800 border-yellow-200
+                    {% else %} bg-blue-100 text-blue-800 border-blue-200 {% endif %}"
+                    role="alert">
+                    <span class="font-medium">{{ category|capitalize }}:</span> {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {# Seção para Gerenciar Meta #}
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-200 max-w-xl mx-auto">
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">Sua Meta Atual</h3>
+
+        {# Exibe a meta atual (que virá do app.py) #}
+        <p class="text-xl text-gray-800 mb-6 p-4 bg-purple-50 border border-purple-200 rounded-md">
+            {# Mostra a meta_atual se existir, senão uma mensagem padrão #}
+            {{ meta_atual if meta_atual else 'Nenhuma meta definida ainda.' }}
+        </p>
+
+        <hr class="my-6">
+
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Atualizar Meta</h3>
+        {# Formulário para atualizar a meta #}
+        <form action="{{ url_for('metas') }}" method="POST" class="space-y-4">
+            <div>
+                <label for="meta" class="block text-sm font-medium text-gray-700 mb-1">Defina sua nova meta financeira:</label>
+                <textarea id="meta" name="meta" rows="3"
+                          placeholder="Ex: Economizar R$ 500 para viagem de férias."
+                          required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500">{{ meta_atual if meta_atual else '' }}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Descreva sua meta. Pode ser um valor, um objetivo, etc.</p>
+            </div>
+            <button type="submit" class="w-full bg-purple-600 text-white py-2.5 px-4 rounded-lg hover:bg-purple-700 text-sm font-medium">
+                Salvar Nova Meta
+            </button>
+        </form>
+    </div>
+
+{% endblock %}
+
+{# Bloco de scripts específico (se necessário) #}
+{% block scripts %}
+    {# <script> console.log("Metas page specific JS loaded."); </script> #}
+{% endblock %}

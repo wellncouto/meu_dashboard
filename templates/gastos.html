@@ -1,0 +1,963 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Mis Gastos - {# Traduzido #}
+    {% if tipo_gasto_ativo == 'fixos' %}
+        Fijos {# Traduzido #}
+    {% else %}
+        Variables {# Traduzido #}
+    {% endif %}
+    - Mi App Fin {# Traduzido #}
+{% endblock %}
+
+{% block head_style %}
+{{ super() }}
+<style>
+    /* Estilos para os botões de ação inline (desktop) */
+    .inline-action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem; /* p-1.5 */
+        margin-left: 0.25rem; /* ml-1 */
+        color: #6b7280; /* text-gray-500 */
+        background-color: transparent;
+        border: none;
+        border-radius: 9999px; /* rounded-full */
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+    .inline-action-button:hover {
+        background-color: #f3f4f6; /* hover:bg-gray-100 */
+        color: #374151; /* hover:text-gray-700 */
+    }
+    .inline-action-button svg {
+        width: 1rem; /* w-4 */
+        height: 1rem; /* h-4 */
+    }
+    .inline-action-button.delete:hover {
+        background-color: #fee2e2; /* hover:bg-red-100 */
+        color: #b91c1c; /* hover:text-red-700 */
+    }
+
+    /* Estilo para modal de ações mobile */
+    #mobile-actions-modal-content .action-button {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        color: #374151; /* text-gray-700 */
+        border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+    }
+    #mobile-actions-modal-content .action-button:last-child {
+        border-bottom: none;
+    }
+    #mobile-actions-modal-content .action-button svg {
+        margin-right: 0.75rem;
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+    #mobile-actions-modal-content .action-button.delete {
+        color: #dc2626; /* text-red-600 */
+    }
+    #mobile-actions-modal-content .action-button.delete svg {
+        color: #dc2626; /* text-red-600 */
+    }
+
+    /* Z-index para modais */
+    .modal-overlay { z-index: 50; }
+    .modal-content { z-index: 51; }
+
+    /* Paginação (Estilos Mantidos) */
+    .pagination-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 1.5rem; /* mt-6 */
+        padding-bottom: 1rem; /* Espaço para não colar no final da tela mobile */
+    }
+    .pagination-controls a, .pagination-controls span { /* Alterado 'button' para 'a' */
+        margin: 0 0.25rem; /* mx-1 */
+        padding: 0.5rem 0.75rem; /* py-2 px-3 */
+        border: 1px solid #d1d5db; /* border-gray-300 */
+        background-color: white;
+        color: #374151; /* text-gray-700 */
+        border-radius: 0.375rem; /* rounded-md */
+        font-size: 0.875rem;
+        text-decoration: none; /* Garante que não haja sublinhado */
+        display: inline-block; /* Para padding funcionar corretamente */
+        line-height: 1.25rem; /* Ajuste para alinhar texto verticalmente */
+    }
+    .pagination-controls a:not(.disabled):hover { /* Aplica hover apenas se não estiver desabilitado */
+        background-color: #f3f4f6; /* hover:bg-gray-100 */
+    }
+    .pagination-controls a.disabled { /* Classe para links desabilitados */
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none; /* Impede cliques */
+    }
+    .pagination-controls .page-number.active {
+        background-color: #55d83f;
+        color: black;
+        border-color: #55d83f;
+    }
+</style>
+{% endblock %}
+
+{% block content_body %}
+<div class="container mx-auto px-2 sm:px-4 md:px-6 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+            💸 Mis Gastos: <span id="tipo-gasto-titulo" class="text-[#065428]"> {# Traduzido #}
+                {% if tipo_gasto_ativo == 'fixos' %}Fijos{% else %}Variables{% endif %} {# Traduzido #}
+            </span>
+        </h1>
+        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button id="open-filter-modal-btn" class="w-full sm:w-auto bg-[#55d83f] hover:bg-[#47b333] text-black font-semibold py-2.5 px-4 sm:px-5 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[#55d83f] focus:ring-opacity-75 flex items-center justify-center transition duration-150 ease-in-out text-sm sm:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3zm3.707 4.707A1 1 0 017 7h6a1 1 0 01.707.293l-2.38 2.379a1 1 0 01-1.414 0L6.707 7.707z" clip-rule="evenodd" /></svg>
+                Filtrar / Ordenar {# Mantido (comum) ou 'Filtrar / Clasificar' #}
+            </button>
+            <button id="open-add-item-modal-btn" class="w-full sm:w-auto bg-[#55d83f] hover:bg-[#47b333] text-black font-semibold py-2.5 px-4 sm:px-5 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[#55d83f] focus:ring-opacity-75 flex items-center justify-center transition duration-150 ease-in-out text-sm sm:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
+                Añadir <span id="tipo-gasto-botao-add"> {% if tipo_gasto_ativo == 'fixos' %} Fijo {% else %} Variable {% endif %} </span> {# Traduzido #}
+            </button>
+        </div>
+    </div>
+
+    {# Tabs para trocar tipo de gasto #}
+    <div class="mb-6 flex justify-center sm:justify-start space-x-2 sm:space-x-3 border-b border-gray-200 pb-3">
+        {# Botões agora são links que incluem os filtros atuais ao trocar de aba #}
+        <a href="{{ url_for('gastos', tipo='variaveis', **filtros_aplicados) }}"
+           class="px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors duration-150
+                  {% if tipo_gasto_ativo == 'variaveis' %} bg-[#55d83f] text-black shadow-sm {% else %} bg-gray-100 text-gray-700 hover:bg-gray-200 {% endif %}">
+            Gastos Variables {# Traduzido #}
+        </a>
+        <a href="{{ url_for('gastos', tipo='fixos', **filtros_aplicados) }}"
+           class="px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors duration-150
+                  {% if tipo_gasto_ativo == 'fixos' %} bg-[#55d83f] text-black shadow-sm {% else %} bg-gray-100 text-gray-700 hover:bg-gray-200 {% endif %}">
+            Gastos Fijos {# Traduzido #}
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg text-sm border
+                    {% if category == 'danger' %} bg-red-100 text-red-700 border-red-200
+                    {% elif category == 'success' %} bg-green-100 text-green-700 border-green-200
+                    {% elif category == 'warning' %} bg-yellow-100 text-yellow-700 border-yellow-200
+                    {% else %} bg-blue-100 text-blue-700 border-blue-200 {% endif %}"
+                    role="alert">
+                    {# A tradução de 'category|capitalize' depende do backend. Ex: 'Success' -> 'Éxito' #}
+                    <span class="font-medium">
+                        {% if category == 'danger' %}Peligro
+                        {% elif category == 'success' %}Éxito
+                        {% elif category == 'warning' %}Advertencia
+                        {% else %}{{ category|capitalize }}{% endif %}:
+                    </span> {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="gastos-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">
+                           {% if tipo_gasto_ativo == 'fixos' %}Fecha Inicio{% else %}Fecha{% endif %} {# Traduzido #}
+                        </th>
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Descripción</th> {# Traduzido #}
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Categoría</th> {# Traduzido #}
+                        {% if tipo_gasto_ativo == 'fixos' %}
+                        <th scope="col" class="hidden sm:table-cell px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Recurrencia</th> {# Traduzido #}
+                        <th scope="col" class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Activo</th> {# Traduzido #}
+                        {% endif %}
+                        <th scope="col" class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Valor</th> {# Mantido #}
+                        <th scope="col" class="hidden lg:table-cell px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Acciones</th> {# Traduzido #}
+                    </tr>
+                </thead>
+                {# O tbody agora só contém os itens da página atual, passados pelo Flask #}
+                <tbody class="bg-white divide-y divide-gray-200" id="gastos-table-body">
+                    {% if itens %}
+                        {% for item in itens %} {# Loop sobre 'itens', que são apenas os da página atual #}
+                        <tr class="table-row-item hover:bg-gray-50 transition-colors duration-150 relative cursor-pointer lg:cursor-default"
+                            data-item-id="{{ item.id }}"
+                            data-item-descricao="{{ item.descripcion }}"
+                            data-item-valor="{{ item.valor }}"
+                            data-item-categoria="{{ item.categoria }}"
+                            data-item-data="{{ item.data | date('%Y-%m-%d') if item.data else '' }}"
+                            {% if tipo_gasto_ativo == 'fixos' %}
+                            data-item-recurrencia="{{ item.recurrencia }}"
+                            data-item-activo="{{ item.activo | lower }}"
+                            {% endif %}
+                        >
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm whitespace-nowrap text-gray-500">{{ item.data | date }}</td>
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm font-medium text-gray-900" title="{{ item.descripcion }}">{{ item.descripcion }}</td>
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm text-gray-500 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if item.categoria == 'Alimentação' %} bg-red-100 text-red-800 {# Traduzir no backend: Alimentación #}
+                                    {% elif item.categoria == 'Transporte' %} bg-blue-100 text-blue-800 {# Traduzir no backend: Transporte #}
+                                    {% elif item.categoria == 'Moradia' %} bg-green-100 text-green-800 {# Traduzir no backend: Vivienda #}
+                                    {% elif item.categoria == 'Lazer' %} bg-yellow-100 text-yellow-800 {# Traduzir no backend: Ocio #}
+                                    {% elif item.categoria == 'Saúde' %} bg-indigo-100 text-indigo-800 {# Traduzir no backend: Salud #}
+                                    {% elif item.categoria == 'Educação' %} bg-pink-100 text-pink-800 {# Traduzir no backend: Educación #}
+                                    {% elif item.categoria == 'Roupas' %} bg-purple-100 text-purple-800 {# Traduzir no backend: Ropa #}
+                                    {% elif item.categoria == 'Mascotas' or item.categoria == 'Pet' %} bg-orange-100 text-orange-800 {# Traduzir no backend: Mascotas #}
+                                    {% elif item.categoria == 'Streaming' %} bg-teal-100 text-teal-800 {# Manter se for termo técnico #}
+                                    {% elif item.categoria == 'Entretenimento' %} bg-cyan-100 text-cyan-800 {# Traduzir no backend: Entretenimiento #}
+                                    {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                    {{ item.categoria or 'S/C' }} {# Traduzido default 'N/A' para 'S/C' (Sin Categoría) #}
+                                </span>
+                            </td>
+                            {% if tipo_gasto_ativo == 'fixos' %}
+                            <td class="hidden sm:table-cell px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm whitespace-nowrap text-gray-500">{{ item.recurrencia | capitalize }}</td>
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm whitespace-nowrap text-gray-500 text-center">
+                                {% if item.activo %}
+                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Sí</span> {# Traduzido #}
+                                {% else %}
+                                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">No</span> {# Traduzido #}
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm whitespace-nowrap text-red-600 font-semibold text-right">{{ item.valor | currency }}</td> {# Ajustar filtro |currency para MXN #}
+                            <td class="hidden lg:table-cell px-2 py-3 text-xs sm:px-3 lg:px-6 whitespace-nowrap text-sm text-center">
+                                {# Botões de ação desktop continuam funcionando com o JS dos modais #}
+                                <div class="flex items-center justify-center space-x-1">
+                                    <button type="button" title="Detalles" class="inline-action-button open-view-item-btn"> {# Traduzido title #}
+                                        <span class="sr-only">Detalles</span> {# Traduzido #}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                    <button type="button" title="Editar" class="inline-action-button open-edit-item-btn"> {# Mantido title #}
+                                        <span class="sr-only">Editar</span> {# Mantido #}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                    <button type="button" title="Eliminar" class="inline-action-button delete open-delete-item-btn"> {# Traduzido title #}
+                                        <span class="sr-only">Eliminar</span> {# Traduzido #}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                         {# Mensagem de "Nenhum item" #}
+                        <tr>
+                            <td colspan="{% if tipo_gasto_ativo == 'fixos' %}7{% else %}5{% endif %}" class="px-6 py-12 text-center text-sm text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                     ¡Ups! Ningún gasto encontrado {% if filtros_aplicados.data_inicio or filtros_aplicados.categoria_filtro != 'todas' or (tipo_gasto_ativo == 'fixos' and filtros_aplicados.filtro_activo) %} con los filtros aplicados{% endif %}. {# Traduzido #}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# --- PAGINAÇÃO ATUALIZADA --- #}
+    {# A div só será mostrada se total_pages > 1 #}
+    <div id="pagination-controls-container" class="pagination-controls {% if total_pages <= 1 %}hidden{% endif %}">
+        {# Botão Anterior: Link desabilitado se na primeira página #}
+        <a href="{{ url_for('gastos', page=current_page-1, **filtros_aplicados) if current_page > 1 else '#' }}"
+           class="{% if current_page <= 1 %}disabled{% endif %}"
+           aria-disabled="{{ 'true' if current_page <= 1 else 'false' }}">
+            &laquo; Anterior {# Mantido #}
+        </a>
+
+        {# Informação da Página #}
+        <span id="page-info-display" class="page-number active">Página {{ current_page }} de {{ total_pages }}</span> {# Mantido estrutura, "Página" e "de" são corretos #}
+
+        {# Botão Próxima: Link desabilitado se na última página #}
+        <a href="{{ url_for('gastos', page=current_page+1, **filtros_aplicados) if current_page < total_pages else '#' }}"
+           class="{% if current_page >= total_pages %}disabled{% endif %}"
+           aria-disabled="{{ 'true' if current_page >= total_pages else 'false' }}">
+            Siguiente &raquo; {# Traduzido #}
+        </a>
+    </div>
+    {# --- FIM DA PAGINAÇÃO ATUALIZADA --- #}
+
+</div> {# Fim do container principal #}
+
+{# --- Modais (Permanecem os mesmos) --- #}
+<div id="add-item-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+    <div id="add-item-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+            <h2 id="add-item-modal-title" class="text-xl font-semibold text-gray-700">➕ Añadir Nuevo Gasto</h2> {# Traduzido (será sobrescrito por JS) #}
+            <button id="close-add-item-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <form id="form-add-item" method="POST" class="space-y-4">
+            <input type="hidden" id="form-tipo-gasto-ativo" name="tipo_gasto_ativo" value="{{ tipo_gasto_ativo }}">
+            <div>
+                <label for="item-descricao-modal" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label> {# Traduzido #}
+                <input type="text" id="item-descricao-modal" name="descricao" required placeholder="Ej: Compras del mes / Suscripción Netflix" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]"> {# Traduzido placeholder #}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="item-valor-modal" class="block text-sm font-medium text-gray-700 mb-1">Valor ($)</label> {# Traduzido #}
+                    <input type="number" step="0.01" id="item-valor-modal" name="valor" required placeholder="150.75" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]"> {# Traduzido placeholder e formato #}
+                </div>
+                <div>
+                    <label for="item-categoria-modal" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label> {# Traduzido #}
+                    <select id="item-categoria-modal" name="categoria" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f] bg-white h-[42px]">
+                        <option value="" disabled selected>Selecciona...</option> {# Traduzido #}
+                        {% for cat_opt in categorias_disponiveis_add_edit %}
+                            <option value="{{ cat_opt }}">{{ cat_opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="campo-data-variavel">
+                    <label for="item-data-modal" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label> {# Traduzido #}
+                    <input type="date" id="item-data-modal" name="data" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]">
+                </div>
+                 <div id="campo-data-inicio-fixo" class="hidden">
+                    <label for="item-fecha-inicio-fixo-modal" class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label> {# Traduzido #}
+                    <input type="date" id="item-fecha-inicio-fixo-modal" name="fecha_inicio_fixo" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]">
+                </div>
+            </div>
+            <div id="campos-gasto-fixo" class="hidden space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="item-recurrencia-fixo-modal" class="block text-sm font-medium text-gray-700 mb-1">Recurrencia</label> {# Traduzido #}
+                        <select id="item-recurrencia-fixo-modal" name="recurrencia_fixo" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f] bg-white h-[42px]">
+                            <option value="mensal" selected>Mensual</option> {# Traduzido #}
+                            <option value="bimestral">Bimestral</option> {# Traduzido #}
+                            <option value="trimestral">Trimestral</option> {# Traduzido #}
+                            <option value="semestral">Semestral</option> {# Traduzido #}
+                            <option value="anual">Anual</option> {# Traduzido #}
+                            <option value="unico">Único</option> {# Traduzido #}
+                        </select>
+                    </div>
+                    <div class="flex items-end pb-1">
+                        <div class="flex items-center h-full">
+                             <input id="item-activo-fixo-modal" name="activo_fixo" type="checkbox" checked class="h-5 w-5 text-[#55d83f] border-gray-300 rounded focus:ring-[#55d83f]">
+                             <label for="item-activo-fixo-modal" class="ml-2 block text-sm text-gray-900">Gasto Activo</label> {# Traduzido #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button type="button" id="cancel-add-item-modal-btn" class="mr-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">Cancelar</button> {# Traduzido #}
+                <button type="submit" class="bg-[#55d83f] hover:bg-[#47b333] text-black font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[#55d83f] focus:ring-opacity-75">Guardar</button> {# Traduzido #}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="filter-gasto-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+    <div id="filter-gasto-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700">🔍 Filtrar y Ordenar Gastos <span class="text-[#065428]">{% if tipo_gasto_ativo == 'fixos' %}Fijos{% else %}Variables{% endif %}</span></h2> {# Traduzido #}
+            <button id="close-filter-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <form method="GET" action="{{ url_for('gastos') }}" class="space-y-4">
+            <input type="hidden" name="tipo" value="{{ tipo_gasto_ativo }}">
+            {# Os inputs de filtro permanecem os mesmos #}
+             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                    <label for="data_inicio_modal_filter" class="block text-sm font-medium text-gray-700">
+                        {% if tipo_gasto_ativo == 'fixos' %}Fecha Inicio (Periodo){% else %}Fecha Inicio{% endif %}: {# Traduzido #}
+                    </label>
+                    <input type="date" name="data_inicio" id="data_inicio_modal_filter" value="{{ filtros_aplicados.data_inicio or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm py-2 px-3">
+                </div>
+                <div>
+                    <label for="data_fim_modal_filter" class="block text-sm font-medium text-gray-700">
+                         {% if tipo_gasto_ativo == 'fixos' %}Fecha Fin (Periodo){% else %}Fecha Fin{% endif %}: {# Traduzido #}
+                    </label>
+                    <input type="date" name="data_fim" id="data_fim_modal_filter" value="{{ filtros_aplicados.data_fim or '' }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm py-2 px-3">
+                </div>
+                <div>
+                    <label for="categoria_filtro_modal_filter" class="block text-sm font-medium text-gray-700">Categoría:</label> {# Traduzido #}
+                    <select name="categoria_filtro" id="categoria_filtro_modal_filter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm h-[42px] bg-white py-2 px-3">
+                        <option value="todas" {% if not filtros_aplicados.categoria_filtro or filtros_aplicados.categoria_filtro == 'todas' %}selected{% endif %}>Todas las Categorías</option> {# Traduzido #}
+                        {% for cat in categorias_disponiveis %}
+                        <option value="{{ cat }}" {% if filtros_aplicados.categoria_filtro == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="sort_by_modal_filter" class="block text-sm font-medium text-gray-700">Ordenar Por:</label> {# Traduzido #}
+                    <select name="sort_by" id="sort_by_modal_filter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm h-[42px] bg-white py-2 px-3">
+                        {% if tipo_gasto_ativo == 'fixos' %}
+                            <option value="fecha_inicio_desc" {% if filtros_aplicados.sort_by == 'fecha_inicio_desc' %}selected{% endif %}>Fecha Inicio (Más Reciente)</option> {# Traduzido #}
+                            <option value="fecha_inicio_asc" {% if filtros_aplicados.sort_by == 'fecha_inicio_asc' %}selected{% endif %}>Fecha Inicio (Más Antigua)</option> {# Traduzido #}
+                            <option value="valor_desc" {% if filtros_aplicados.sort_by == 'valor_desc' %}selected{% endif %}>Valor (Mayor)</option> {# Traduzido #}
+                            <option value="valor_asc" {% if filtros_aplicados.sort_by == 'valor_asc' %}selected{% endif %}>Valor (Menor)</option> {# Traduzido #}
+                            <option value="categoria_asc" {% if filtros_aplicados.sort_by == 'categoria_asc' %}selected{% endif %}>Categoría (A-Z)</option> {# Traduzido #}
+                            <option value="recurrencia_asc" {% if filtros_aplicados.sort_by == 'recurrencia_asc' %}selected{% endif %}>Recurrencia (A-Z)</option> {# Traduzido #}
+                             <option value="activo_desc" {% if filtros_aplicados.sort_by == 'activo_desc' %}selected{% endif %}>Activo (Sí Primero)</option> {# Traduzido #}
+                             <option value="activo_asc" {% if filtros_aplicados.sort_by == 'activo_asc' %}selected{% endif %}>Activo (No Primero)</option> {# Traduzido #}
+                            <option value="id_desc" {% if not filtros_aplicados.sort_by or filtros_aplicados.sort_by == 'id_desc' %}selected{% endif %}>ID (Más Reciente)</option> {# Traduzido #}
+                            <option value="id_asc" {% if filtros_aplicados.sort_by == 'id_asc' %}selected{% endif %}>ID (Más Antiguo)</option> {# Traduzido #}
+                        {% else %}
+                            <option value="data_desc" {% if not filtros_aplicados.sort_by or filtros_aplicados.sort_by == 'data_desc' %}selected{% endif %}>Fecha (Más Reciente)</option> {# Traduzido #}
+                            <option value="data_asc" {% if filtros_aplicados.sort_by == 'data_asc' %}selected{% endif %}>Fecha (Más Antigua)</option> {# Traduzido #}
+                            <option value="valor_desc" {% if filtros_aplicados.sort_by == 'valor_desc' %}selected{% endif %}>Valor (Mayor)</option> {# Traduzido #}
+                            <option value="valor_asc" {% if filtros_aplicados.sort_by == 'valor_asc' %}selected{% endif %}>Valor (Menor)</option> {# Traduzido #}
+                            <option value="categoria_asc" {% if filtros_aplicados.sort_by == 'categoria_asc' %}selected{% endif %}>Categoría (A-Z)</option> {# Traduzido #}
+                            <option value="id_desc" {% if filtros_aplicados.sort_by == 'id_desc' %}selected{% endif %}>ID (Más Reciente)</option> {# Traduzido #}
+                             <option value="id_asc" {% if filtros_aplicados.sort_by == 'id_asc' %}selected{% endif %}>ID (Más Antiguo)</option> {# Traduzido #}
+                        {% endif %}
+                    </select>
+                </div>
+                {% if tipo_gasto_ativo == 'fixos' %}
+                <div class="sm:col-span-2">
+                    <label for="filtro_activo_modal_filter" class="block text-sm font-medium text-gray-700">Estado Activo:</label> {# Traduzido #}
+                    <select name="filtro_activo" id="filtro_activo_modal_filter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm h-[42px] bg-white py-2 px-3">
+                        <option value="todos" {% if not filtros_aplicados.filtro_activo or filtros_aplicados.filtro_activo == 'todos' %}selected{% endif %}>Todos</option> {# Traduzido #}
+                        <option value="true" {% if filtros_aplicados.filtro_activo == 'true' %}selected{% endif %}>Solo Activos</option> {# Traduzido #}
+                        <option value="false" {% if filtros_aplicados.filtro_activo == 'false' %}selected{% endif %}>Solo Inactivos</option> {# Traduzido #}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+            <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-2">
+                {# Botão Limpar agora é um link para a rota base sem filtros extras #}
+                <a href="{{ url_for('gastos', tipo=tipo_gasto_ativo) }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#55d83f]">
+                    🧹 Limpiar Filtros {# Traduzido #}
+                </a>
+                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-[#55d83f] hover:bg-[#47b333] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#55d83f]">
+                    🚀 Aplicar Filtros {# Traduzido #}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="view-item-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+    <div id="view-item-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700">ℹ️ Detalles del Gasto</h2> {# Traduzido #}
+            <button id="close-view-item-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div class="space-y-3 text-sm">
+            <p><strong>ID:</strong> <span id="view-item-id" class="text-gray-700"></span></p>
+            <p><strong>Descripción:</strong> <span id="view-item-descricao" class="text-gray-700 break-all"></span></p> {# Traduzido #}
+            <p><strong>Valor:</strong> <span id="view-item-valor" class="font-semibold text-red-600"></span></p> {# Mantido #}
+            <p><strong>Categoría:</strong> <span id="view-item-categoria" class="text-gray-700"></span></p> {# Traduzido #}
+            <p><strong id="view-item-data-label">Fecha:</strong> <span id="view-item-data" class="text-gray-700"></span></p> {# Traduzido (será sobrescrito por JS para "Fecha Inicio") #}
+            <div id="view-item-fixo-fields" class="hidden space-y-3">
+                <p><strong>Recurrencia:</strong> <span id="view-item-recurrencia" class="text-gray-700"></span></p> {# Traduzido #}
+                <p><strong>Activo:</strong> <span id="view-item-activo" class="text-gray-700"></span></p> {# Traduzido #}
+            </div>
+        </div>
+        <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
+            <button type="button" id="cancel-view-item-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">Cerrar</button> {# Traduzido #}
+        </div>
+    </div>
+</div>
+
+<div id="edit-item-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+    <div id="edit-item-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+            <h2 id="edit-item-modal-title" class="text-xl font-semibold text-gray-700">✏️ Editar Gasto</h2> {# Mantido #}
+            <button id="close-edit-item-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <form id="form-edit-item" method="POST" class="space-y-4"> {# Action será definida via JS #}
+            <input type="hidden" id="edit-item-id-input" name="item_id">
+            <input type="hidden" id="edit-form-tipo-gasto-ativo" name="tipo_gasto_ativo" value="{{ tipo_gasto_ativo }}">
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ID del Gasto</label> {# Traduzido #}
+                <p id="edit-item-id-display" class="px-3 py-2 bg-gray-100 text-gray-600 rounded-md text-sm"></p>
+            </div>
+            <div>
+                <label for="edit-item-descricao" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label> {# Traduzido #}
+                <input type="text" id="edit-item-descricao" name="descricao" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="edit-item-valor" class="block text-sm font-medium text-gray-700 mb-1">Valor ($)</label> {# Traduzido #}
+                    <input type="number" step="0.01" id="edit-item-valor" name="valor" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]">
+                </div>
+                <div>
+                    <label for="edit-item-categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label> {# Traduzido #}
+                    <select id="edit-item-categoria" name="categoria" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f] bg-white h-[42px]">
+                        <option value="" disabled>Selecciona...</option> {# Traduzido #}
+                         {% for cat_opt in categorias_disponiveis_add_edit %}
+                            <option value="{{ cat_opt }}">{{ cat_opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="edit-campo-data">
+                    <label for="edit-item-data-input" id="edit-item-data-label" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label> {# Traduzido (será sobrescrito por JS para "Fecha Inicio") #}
+                    <input type="date" id="edit-item-data-input" name="data" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f]">
+                </div>
+            </div>
+
+            <div id="edit-campos-gasto-fixo" class="hidden space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-item-recurrencia-fixo" class="block text-sm font-medium text-gray-700 mb-1">Recurrencia</label> {# Traduzido #}
+                        <select id="edit-item-recurrencia-fixo" name="recurrencia_fixo" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-[#55d83f] focus:border-[#55d83f] bg-white h-[42px]">
+                            <option value="mensal">Mensual</option> {# Traduzido #}
+                            <option value="bimestral">Bimestral</option> {# Traduzido #}
+                            <option value="trimestral">Trimestral</option> {# Traduzido #}
+                            <option value="semestral">Semestral</option> {# Traduzido #}
+                            <option value="anual">Anual</option> {# Traduzido #}
+                            <option value="unico">Único</option> {# Traduzido #}
+                        </select>
+                    </div>
+                    <div class="flex items-end pb-1">
+                        <div class="flex items-center h-full">
+                             <input id="edit-item-activo-fixo" name="activo_fixo" type="checkbox" class="h-5 w-5 text-[#55d83f] border-gray-300 rounded focus:ring-[#55d83f]">
+                             <label for="edit-item-activo-fixo" class="ml-2 block text-sm text-gray-900">Gasto Activo</label> {# Traduzido #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button type="button" id="cancel-edit-item-modal-btn" class="mr-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">Cancelar</button> {# Traduzido #}
+                <button type="submit" class="bg-[#55d83f] hover:bg-[#47b333] text-black font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[#55d83f] focus:ring-opacity-75">
+                    Guardar Cambios {# Traduzido #}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="delete-item-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+    <div id="delete-item-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-700">🗑️ Confirmar Eliminación</h2> {# Traduzido #}
+            <button id="close-delete-item-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <p class="text-gray-600 mb-2">¿Estás seguro de que deseas eliminar el siguiente gasto?</p> {# Traduzido #}
+        <div class="bg-gray-50 p-3 rounded-md border border-gray-200 mb-4 text-sm">
+            <p><strong>ID:</strong> <span id="delete-item-id-display" class="text-gray-700"></span></p>
+            <p><strong>Descripción:</strong> <span id="delete-item-descricao-display" class="text-gray-700 break-all"></span></p> {# Traduzido #}
+            <p><strong>Valor:</strong> <span id="delete-item-valor-display" class="font-semibold text-red-600"></span></p> {# Mantido #}
+        </div>
+        <form id="form-delete-item" method="POST"> {# Action definida via JS #}
+             <input type="hidden" id="delete-item-id-input" name="item_id">
+             <input type="hidden" id="delete-form-tipo-gasto-ativo" name="tipo_gasto_ativo" value="{{ tipo_gasto_ativo }}">
+            <div class="flex justify-end space-x-3 pt-2">
+                <button type="button" id="cancel-delete-item-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">Cancelar</button> {# Traduzido #}
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75">
+                    Eliminar {# Traduzido #}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="mobile-actions-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-end justify-center z-50 hidden p-0 transition-opacity duration-300 opacity-0 md:hidden modal-overlay">
+    <div id="mobile-actions-modal-content" class="bg-white rounded-t-xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-out translate-y-full modal-content">
+        <div class="p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 text-center">📱 Acciones para el Gasto</h3> {# Traduzido #}
+            <p class="text-sm text-gray-500 text-center" id="mobile-actions-item-description"></p>
+        </div>
+        <div class="py-2">
+            <button class="action-button open-view-item-btn-mobile">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                Detalles {# Traduzido #}
+            </button>
+            <button class="action-button open-edit-item-btn-mobile">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                Editar {# Mantido #}
+            </button>
+            <button class="action-button delete open-delete-item-btn-mobile">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                Eliminar {# Traduzido #}
+            </button>
+        </div>
+        <div class="p-4 bg-gray-50 rounded-b-xl">
+            <button id="cancel-mobile-actions-modal-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 px-4 rounded-lg shadow-sm">Cancelar</button> {# Traduzido #}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Remova TODO o JavaScript antigo de paginação (displayPage, updatePaginationControls)
+// O JavaScript abaixo lida apenas com os modais (adicionar, editar, excluir, visualizar, ações mobile)
+
+document.addEventListener('DOMContentLoaded', function() {
+    const TIPO_GASTO_ATUAL = "{{ tipo_gasto_ativo }}";
+    let currentItemRowClicked = null;
+
+    // URLs para formulários de edição/exclusão (serão atualizadas no JS)
+    const editActionUrlTemplate = `/gastos/${TIPO_GASTO_ATUAL}/{item_id}/edit`;
+    const deleteActionUrlTemplate = `/gastos/${TIPO_GASTO_ATUAL}/{item_id}/delete`;
+
+    // --- Função Genérica para Controle de Modais ---
+    function setupModal(modalId, openTriggers, closeBtnId, contentId, cancelBtnId, onOpenCallback, slideFromBottom = false) {
+        const modal = document.getElementById(modalId);
+        const content = document.getElementById(contentId);
+        const closeBtn = document.getElementById(closeBtnId);
+        const cancelBtn = cancelBtnId ? document.getElementById(cancelBtnId) : null;
+
+        function openModal(relatedTargetOrRow) {
+            if (modal && content) {
+                // Fecha outros modais abertos
+                 document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(otherModal => {
+                    if (otherModal.id !== modalId) { // Não fechar a si mesmo
+                        const otherContent = otherModal.querySelector('.modal-content');
+                        const otherCloseBtn = otherModal.querySelector('[id^="close-"], [id^="cancel-"]');
+                        if (otherCloseBtn) otherCloseBtn.click();
+                        else { // Fallback se não houver botão de fechar padrão
+                            if(otherContent) otherContent.classList.add('opacity-0', 'scale-95');
+                            otherModal.classList.add('opacity-0');
+                            setTimeout(() => otherModal.classList.add('hidden'), 300);
+                        }
+                    }
+                });
+
+                // Abre o modal atual
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('opacity-0', 'scale-95', 'translate-y-full'); // Reseta classes de animação
+                    if (slideFromBottom) {
+                        content.classList.add('translate-y-full'); // Começa fora da tela (embaixo)
+                        setTimeout(() => content.classList.remove('translate-y-full'), 10); // Anima para a posição
+                    } else {
+                        content.classList.add('opacity-100', 'scale-100'); // Animação de scale/fade
+                    }
+                }, 10);
+
+                if (onOpenCallback && typeof onOpenCallback === 'function') {
+                    onOpenCallback(relatedTargetOrRow);
+                }
+            }
+        }
+
+        function closeModal() {
+            if (modal && content) {
+                const slide = modal.id === 'mobile-actions-modal'; // Verifica se é o modal mobile
+                if (slide) {
+                    content.classList.add('translate-y-full'); // Anima para baixo
+                } else {
+                    content.classList.remove('opacity-100', 'scale-100');
+                    content.classList.add('opacity-0', 'scale-95'); // Animação scale/fade
+                }
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                     // Reseta forms de add/edit ao fechar
+                    if (modalId === 'add-item-modal') {
+                        const form = document.getElementById('form-add-item');
+                        if (form) form.reset();
+                    } else if (modalId === 'edit-item-modal') {
+                        const form = document.getElementById('form-edit-item');
+                        if (form) form.reset();
+                    }
+                }, 300); // Tempo da transição CSS
+            }
+        }
+
+         // Listener para botões dinâmicos (na tabela)
+        document.body.addEventListener('click', function(event) {
+            if (typeof openTriggers === 'string' && openTriggers.startsWith('.')) {
+                const targetButton = event.target.closest(openTriggers);
+                if (targetButton) {
+                     openModal(targetButton); // Passa o botão que foi clicado
+                }
+            }
+        });
+
+        // Botões estáticos (Adicionar, Filtrar)
+        if (typeof openTriggers === 'string' && !openTriggers.startsWith('.')) {
+            const staticOpenBtn = document.getElementById(openTriggers);
+            if (staticOpenBtn) {
+                staticOpenBtn.addEventListener('click', (e) => {
+                     e.stopPropagation();
+                     openModal(staticOpenBtn); // Passa o botão estático
+                });
+            }
+        }
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        if (modal) {
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) closeModal();
+            });
+        }
+        return { openModal, closeModal }; // Retorna as funções para controle externo se necessário
+    }
+
+    // --- Inicialização dos Modais ---
+    const { openModal: openAddItemModal } = setupModal(
+        'add-item-modal', 'open-add-item-modal-btn', 'close-add-item-modal-btn',
+        'add-item-modal-content', 'cancel-add-item-modal-btn', prepareAddItemModal
+    );
+    setupModal( // Modal de filtro não precisa de callback especial na abertura padrão
+        'filter-gasto-modal', 'open-filter-modal-btn', 'close-filter-modal-btn', 'filter-gasto-modal-content'
+    );
+    const { openModal: openViewModal } = setupModal(
+        'view-item-modal', '.open-view-item-btn', 'close-view-item-modal-btn',
+        'view-item-modal-content', 'cancel-view-item-modal-btn', populateViewModal
+    );
+    const { openModal: openEditModal } = setupModal(
+        'edit-item-modal', '.open-edit-item-btn', 'close-edit-item-modal-btn',
+        'edit-item-modal-content', 'cancel-edit-item-modal-btn', populateEditModal
+    );
+    const { openModal: openDeleteModal } = setupModal(
+        'delete-item-modal', '.open-delete-item-btn', 'close-delete-item-modal-btn',
+        'delete-item-modal-content', 'cancel-delete-item-modal-btn', populateDeleteModal
+    );
+    const { openModal: openMobileActionsModal, closeModal: closeMobileActionsModal } = setupModal(
+        'mobile-actions-modal', null, null, // Aberto por clique na linha
+        'mobile-actions-modal-content', 'cancel-mobile-actions-modal-btn', populateMobileActionsModal, true // Slide from bottom
+    );
+
+    // --- Lógica Específica dos Modais de Gastos ---
+
+    // Seletores para o Modal de Adicionar/Editar (usados em prepareAddItemModal e populateEditModal)
+    const addItemForm = document.getElementById('form-add-item');
+    const addItemModalTitle = document.getElementById('add-item-modal-title');
+    const campoDescricaoAdd = document.getElementById('item-descricao-modal');
+    const campoValorAdd = document.getElementById('item-valor-modal');
+    const campoCategoriaAdd = document.getElementById('item-categoria-modal');
+    const campoDataVariavelAdd = document.getElementById('campo-data-variavel');
+    const inputDataVariavelAdd = document.getElementById('item-data-modal');
+    const campoDataInicioFixoAdd = document.getElementById('campo-data-inicio-fixo');
+    const inputDataInicioFixoAdd = document.getElementById('item-fecha-inicio-fixo-modal');
+    const camposGastoFixoAdd = document.getElementById('campos-gasto-fixo');
+    const inputRecurrenciaFixoAdd = document.getElementById('item-recurrencia-fixo-modal');
+    const inputActivoFixoAdd = document.getElementById('item-activo-fixo-modal');
+    const formTipoGastoAtivoInputAdd = document.getElementById('form-tipo-gasto-ativo');
+
+    const editItemForm = document.getElementById('form-edit-item');
+    const editItemIdDisplay = document.getElementById('edit-item-id-display');
+    const editItemIdInput = document.getElementById('edit-item-id-input');
+    const editFormTipoGastoAtivo = document.getElementById('edit-form-tipo-gasto-ativo');
+    const editItemDescricao = document.getElementById('edit-item-descricao');
+    const editItemValor = document.getElementById('edit-item-valor');
+    const editItemCategoria = document.getElementById('edit-item-categoria');
+    const editCampoData = document.getElementById('edit-campo-data'); // Div que contém o input de data
+    const editItemDataInput = document.getElementById('edit-item-data-input');
+    const editItemDataLabel = document.getElementById('edit-item-data-label');
+    const editCamposGastoFixo = document.getElementById('edit-campos-gasto-fixo');
+    const editItemRecurrenciaFixo = document.getElementById('edit-item-recurrencia-fixo');
+    const editItemActivoFixo = document.getElementById('edit-item-activo-fixo');
+
+    const deleteItemForm = document.getElementById('form-delete-item');
+
+    function getRowData(element) {
+        const row = element.closest('tr.table-row-item');
+        if (!row) return null;
+        return row.dataset;
+    }
+
+    // Prepara o Modal de Adição
+    function prepareAddItemModal() {
+        if (!addItemForm) return;
+        addItemForm.reset(); // Limpa o formulário
+        if (formTipoGastoAtivoInputAdd) formTipoGastoAtivoInputAdd.value = TIPO_GASTO_ATUAL;
+
+        // Define a action correta do formulário
+        const addActionUrl = (TIPO_GASTO_ATUAL === 'fixos') ? "{{ url_for('add_gasto_fixo') }}" : "{{ url_for('add_gasto') }}";
+        addItemForm.action = addActionUrl;
+
+        // Ajusta a visibilidade e os atributos dos campos com base no tipo de gasto
+        if (TIPO_GASTO_ATUAL === 'fixos') {
+            if (addItemModalTitle) addItemModalTitle.innerHTML = '➕ Añadir Nuevo Gasto Fijo'; // Traduzido
+            // Ajusta nomes dos campos para o backend de gasto fixo
+            if (campoDescricaoAdd) campoDescricaoAdd.name = "descricao_fixo";
+            if (campoValorAdd) campoValorAdd.name = "valor_fixo";
+            if (campoCategoriaAdd) campoCategoriaAdd.name = "categoria_fixo";
+            // Esconde campo de data única e mostra campo de data início
+            if (campoDataVariavelAdd) campoDataVariavelAdd.classList.add('hidden');
+            if (inputDataVariavelAdd) inputDataVariavelAdd.removeAttribute('required'); // Não é obrigatório aqui
+            if (campoDataInicioFixoAdd) campoDataInicioFixoAdd.classList.remove('hidden');
+            if (inputDataInicioFixoAdd) {
+                inputDataInicioFixoAdd.setAttribute('required', 'required');
+                inputDataInicioFixoAdd.name = "fecha_inicio_fixo"; // Nome correto para backend
+                 if (!inputDataInicioFixoAdd.value) inputDataInicioFixoAdd.value = new Date().toISOString().split('T')[0]; // Data de hoje como padrão
+            }
+            // Mostra campos específicos de gasto fixo
+            if (camposGastoFixoAdd) camposGastoFixoAdd.classList.remove('hidden');
+            if (inputRecurrenciaFixoAdd) inputRecurrenciaFixoAdd.setAttribute('required', 'required');
+            if (inputActivoFixoAdd) inputActivoFixoAdd.checked = true; // Padrão ativo
+        } else { // Gasto Variável
+            if (addItemModalTitle) addItemModalTitle.innerHTML = '➕ Añadir Nuevo Gasto Variable'; // Traduzido
+             // Ajusta nomes dos campos para o backend de gasto variável
+            if (campoDescricaoAdd) campoDescricaoAdd.name = "descricao";
+            if (campoValorAdd) campoValorAdd.name = "valor";
+            if (campoCategoriaAdd) campoCategoriaAdd.name = "categoria";
+            // Mostra campo de data única e esconde campo de data início
+            if (campoDataVariavelAdd) campoDataVariavelAdd.classList.remove('hidden');
+            if (inputDataVariavelAdd) {
+                inputDataVariavelAdd.setAttribute('required', 'required');
+                inputDataVariavelAdd.name = "data"; // Nome correto para backend
+                if (!inputDataVariavelAdd.value) inputDataVariavelAdd.value = new Date().toISOString().split('T')[0]; // Data de hoje como padrão
+            }
+            if (campoDataInicioFixoAdd) campoDataInicioFixoAdd.classList.add('hidden');
+            if (inputDataInicioFixoAdd) inputDataInicioFixoAdd.removeAttribute('required');
+            // Esconde campos específicos de gasto fixo
+            if (camposGastoFixoAdd) camposGastoFixoAdd.classList.add('hidden');
+            if (inputRecurrenciaFixoAdd) inputRecurrenciaFixoAdd.removeAttribute('required');
+        }
+    }
+
+    // Preenche o Modal de Visualização
+    function populateViewModal(triggerElementOrRow) {
+        const data = getRowData(triggerElementOrRow);
+        if (!data) return;
+        document.getElementById('view-item-id').textContent = data.itemId;
+        document.getElementById('view-item-descricao').textContent = data.itemDescricao;
+        document.getElementById('view-item-valor').textContent = parseFloat(data.itemValor).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }); // Adaptado para MXN
+        document.getElementById('view-item-categoria').textContent = data.itemCategoria;
+        const dataLabel = document.getElementById('view-item-data-label');
+        const dataValue = document.getElementById('view-item-data');
+        const fixoFields = document.getElementById('view-item-fixo-fields');
+
+        if (TIPO_GASTO_ATUAL === 'fixos') {
+            dataLabel.innerHTML = '<strong>Fecha Inicio:</strong>'; // Traduzido
+            dataValue.textContent = data.itemData ? new Date(data.itemData + 'T00:00:00').toLocaleDateString('es-MX', {timeZone: 'UTC'}) : 'N/D'; // Adaptado para MXN e N/D
+            document.getElementById('view-item-recurrencia').textContent = data.itemRecurrencia ? data.itemRecurrencia.charAt(0).toUpperCase() + data.itemRecurrencia.slice(1) : 'N/D'; // Adaptado para N/D
+            document.getElementById('view-item-activo').textContent = data.itemActivo === 'true' ? 'Sí' : 'No'; // Traduzido
+            fixoFields.classList.remove('hidden');
+        } else {
+            dataLabel.innerHTML = '<strong>Fecha:</strong>'; // Traduzido
+            dataValue.textContent = data.itemData ? new Date(data.itemData + 'T00:00:00').toLocaleDateString('es-MX', {timeZone: 'UTC'}) : 'N/D'; // Adaptado para MXN e N/D
+            fixoFields.classList.add('hidden');
+        }
+    }
+
+    // Preenche o Modal de Edição
+    function populateEditModal(triggerElementOrRow) {
+        const data = getRowData(triggerElementOrRow);
+        if (!data || !editItemForm) return;
+
+        editItemForm.reset(); // Limpa o formulário
+        const itemId = data.itemId;
+
+        // Define a action URL dinâmica
+        editItemForm.action = editActionUrlTemplate.replace('{item_id}', itemId);
+
+        // Preenche campos comuns
+        if(editItemIdDisplay) editItemIdDisplay.textContent = itemId;
+        if(editItemIdInput) editItemIdInput.value = itemId; // Hidden input com o ID
+        if(editFormTipoGastoAtivo) editFormTipoGastoAtivo.value = TIPO_GASTO_ATUAL; // Hidden input com tipo
+        if(editItemDescricao) editItemDescricao.value = data.itemDescricao;
+        if(editItemValor) editItemValor.value = parseFloat(data.itemValor).toFixed(2); // Formata para ter 2 casas decimais
+        if(editItemCategoria) editItemCategoria.value = data.itemCategoria; // Pré-seleciona a categoria
+
+        // Ajusta campos específicos por tipo
+        if (TIPO_GASTO_ATUAL === 'fixos') {
+            if(editItemDataLabel) editItemDataLabel.textContent = 'Fecha Inicio'; // Traduzido
+            if(editItemDataInput) {
+                editItemDataInput.value = data.itemData; // Formato YYYY-MM-DD
+                editItemDataInput.name = 'fecha_inicio_fixo'; // Nome esperado pelo backend para fixos
+                editItemDataInput.setAttribute('required', 'required');
+            }
+            if(editCamposGastoFixo) editCamposGastoFixo.classList.remove('hidden');
+            if(editItemRecurrenciaFixo) {
+                 editItemRecurrenciaFixo.value = data.itemRecurrencia;
+                 editItemRecurrenciaFixo.setAttribute('required', 'required');
+                 editItemRecurrenciaFixo.name = 'recurrencia_fixo'; // Nome correto
+            }
+            if(editItemActivoFixo) {
+                 editItemActivoFixo.checked = data.itemActivo === 'true';
+                 editItemActivoFixo.name = 'activo_fixo'; // Nome correto
+            }
+        } else { // Gasto Variável
+             if(editItemDataLabel) editItemDataLabel.textContent = 'Fecha'; // Traduzido
+             if(editItemDataInput) {
+                 editItemDataInput.value = data.itemData; // Formato YYYY-MM-DD
+                 editItemDataInput.name = 'data'; // Nome esperado pelo backend para variáveis
+                 editItemDataInput.setAttribute('required', 'required');
+            }
+            if(editCamposGastoFixo) editCamposGastoFixo.classList.add('hidden');
+            // Remove 'required' e ajusta nomes dos campos fixos para não serem enviados
+             if(editItemRecurrenciaFixo) {
+                 editItemRecurrenciaFixo.removeAttribute('required');
+                 editItemRecurrenciaFixo.name = 'recurrencia_fixo_placeholder_edit';
+            }
+            if(editItemActivoFixo) editItemActivoFixo.name = 'activo_fixo_placeholder_edit';
+        }
+    }
+
+    // Preenche o Modal de Exclusão
+    function populateDeleteModal(triggerElementOrRow) {
+        const data = getRowData(triggerElementOrRow);
+        if (!data || !deleteItemForm) return;
+        const itemId = data.itemId;
+
+        // Define a action URL dinâmica
+        deleteItemForm.action = deleteActionUrlTemplate.replace('{item_id}', itemId);
+
+        // Preenche os campos do modal
+        document.getElementById('delete-item-id-display').textContent = itemId;
+        document.getElementById('delete-item-id-input').value = itemId; // Hidden input
+        document.getElementById('delete-form-tipo-gasto-ativo').value = TIPO_GASTO_ATUAL; // Hidden input
+        document.getElementById('delete-item-descricao-display').textContent = data.itemDescricao;
+        document.getElementById('delete-item-valor-display').textContent = parseFloat(data.itemValor).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }); // Adaptado para MXN
+    }
+
+     // Preenche o Modal de Ações Mobile
+    function populateMobileActionsModal(row) {
+        currentItemRowClicked = row; // Armazena a linha clicada
+        const data = getRowData(row);
+        if (!data) return;
+        const descriptionEl = document.getElementById('mobile-actions-item-description');
+        if (descriptionEl) {
+            descriptionEl.textContent = `ID: ${data.itemId} - ${data.itemDescricao.substring(0,30)}${data.itemDescricao.length > 30 ? '...' : ''}`;
+        }
+         // Aqui você pode adicionar lógica para desabilitar botões no modal mobile se necessário
+         // const mobileEditBtn = document.querySelector('#mobile-actions-modal-content .open-edit-item-btn-mobile');
+         // const mobileDeleteBtn = document.querySelector('#mobile-actions-modal-content .open-delete-item-btn-mobile');
+         // mobileEditBtn.disabled = false; // Exemplo
+         // mobileDeleteBtn.disabled = false; // Exemplo
+    }
+
+    // --- Listeners para Botões DENTRO do Modal Mobile ---
+    document.querySelectorAll('.open-view-item-btn-mobile').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentItemRowClicked) openViewModal(currentItemRowClicked);
+            closeMobileActionsModal(); // Fecha o modal de ações
+        });
+    });
+    document.querySelectorAll('.open-edit-item-btn-mobile').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentItemRowClicked) openEditModal(currentItemRowClicked);
+            closeMobileActionsModal();
+        });
+    });
+    document.querySelectorAll('.open-delete-item-btn-mobile').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentItemRowClicked) openDeleteModal(currentItemRowClicked);
+            closeMobileActionsModal();
+        });
+    });
+
+    // --- Listener para Clique na Linha da Tabela (Mobile) ---
+    const gastosTableBody = document.getElementById('gastos-table-body');
+    if (gastosTableBody) {
+        gastosTableBody.addEventListener('click', function(event) {
+            // Abre modal apenas em telas menores que a definida (md: 768px ou lg: 1024px)
+            if (window.innerWidth < 1024) { // Pode ajustar para 768 se preferir md
+                 const row = event.target.closest('tr.table-row-item');
+                 // Garante que o clique foi na linha e não num botão (caso existam botões visíveis em mobile)
+                 if (row && !event.target.closest('button, a')) {
+                     populateMobileActionsModal(row); // Popula os dados
+                     openMobileActionsModal(row); // Abre o modal de ações mobile
+                 }
+            }
+        });
+    }
+
+});
+</script>
+{% endblock %}

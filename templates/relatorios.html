@@ -1,0 +1,647 @@
+{# Herda a estrutura do base.html #}
+{% extends 'base.html' %}
+
+{# Define o título específico desta página #}
+{% block title %}Informes Financieros - Mi App Fin{% endblock %} {# Traduzido #}
+
+{# Define a classe do body #}
+{% block body_class %}bg-gray-50 lg:bg-gray-200{% endblock %} {# Mantendo o fundo cinza claro do base para desktop #}
+
+{% block head_style %}
+{{ super() }}
+<style>
+    /* Estilos para os botões de ação inline (copiados de gastos/receitas) */
+    .inline-action-button {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: 0.375rem; margin-left: 0.25rem; color: #6b7280;
+        background-color: transparent; border: none; border-radius: 9999px;
+        cursor: pointer; transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+    .inline-action-button:hover { background-color: #f3f4f6; color: #374151; }
+    .inline-action-button svg { width: 1rem; height: 1rem; }
+    .inline-action-button.delete:hover { background-color: #fee2e2; color: #b91c1c; } /* Exemplo se precisar de delete */
+
+    /* Estilo para modal de ações mobile (adaptado para relatórios) */
+    #mobile-actions-relatorio-modal-content .action-button {
+        display: flex; align-items: center; width: 100%; padding: 0.75rem 1rem;
+        font-size: 1rem; color: #374151; border-bottom: 1px solid #e5e7eb;
+    }
+    #mobile-actions-relatorio-modal-content .action-button:last-child { border-bottom: none; }
+    #mobile-actions-relatorio-modal-content .action-button svg { margin-right: 0.75rem; width: 1.25rem; height: 1.25rem; }
+    #mobile-actions-relatorio-modal-content .action-button.delete { color: #dc2626; }
+    #mobile-actions-relatorio-modal-content .action-button.delete svg { color: #dc2626; }
+
+    /* Z-index para modais */
+    .modal-overlay { z-index: 50; }
+    .modal-content { z-index: 51; }
+
+     /* Paginação (Estilos Mantidos) */
+    .pagination-controls {
+        display: flex; justify-content: center; align-items: center;
+        margin-top: 1.5rem; /* mt-6 */
+        padding-bottom: 1rem; /* Espaço extra no final */
+    }
+    .pagination-controls a, .pagination-controls span { /* Alterado 'button' para 'a' */
+        margin: 0 0.25rem; /* mx-1 */
+        padding: 0.5rem 0.75rem; /* py-2 px-3 */
+        border: 1px solid #d1d5db; /* border-gray-300 */
+        background-color: white;
+        color: #374151; /* text-gray-700 */
+        border-radius: 0.375rem; /* rounded-md */
+        font-size: 0.875rem;
+        text-decoration: none; /* Garante que não haja sublinhado */
+        display: inline-block; /* Para padding funcionar corretamente */
+        line-height: 1.25rem; /* Ajuste para alinhar texto verticalmente */
+    }
+    .pagination-controls a:not(.disabled):hover { /* Aplica hover apenas se não estiver desabilitado */
+        background-color: #f3f4f6; /* hover:bg-gray-100 */
+    }
+    .pagination-controls a.disabled { /* Classe para links desabilitados */
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none; /* Impede cliques */
+    }
+    .pagination-controls .page-number.active { /* Estilo para span ativo */
+        background-color: #55d83f;
+        color: black;
+        border-color: #55d83f;
+    }
+    /* Removido ID específico #page-info-display-relatorios.active, usando apenas .page-number.active */
+
+    /* Ajuste para linha da tabela ser clicável em mobile */
+    .table-row-relatorio { cursor: default; } /* Padrão desktop */
+    @media (max-width: 1023px) { /* lg breakpoint */
+        .table-row-relatorio { cursor: pointer; }
+    }
+</style>
+{% endblock %}
+
+{# Conteúdo principal da página de Relatórios #}
+{% block content_body %}
+<div class="container mx-auto px-2 sm:px-4 md:px-6 py-8">
+
+    {# Cabeçalho da Página e Botão de Filtro (Sem alterações) #}
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">📊 Informes Financieros</h1> {# Traduzido #}
+            <p class="text-gray-600 mt-1">Visualiza resúmenes y análisis de tus finanzas.</p> {# Traduzido #}
+        </div>
+        <div class="flex w-full md:w-auto">
+            <button
+                id="open-filter-relatorios-modal-btn"
+                class="w-full md:w-auto bg-[#55d83f] hover:bg-[#47b333] text-black font-semibold py-2.5 px-4 sm:px-5 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[#55d83f] focus:ring-opacity-75 flex items-center justify-center transition duration-150 ease-in-out text-sm sm:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3zm3.707 4.707A1 1 0 017 7h6a1 1 0 01.707.293l-2.38 2.379a1 1 0 01-1.414 0L6.707 7.707z" clip-rule="evenodd" />
+                </svg>
+                Filtrar Informe {# Traduzido #}
+            </button>
+        </div>
+    </div>
+
+    {# Mensagens Flash (Sem alterações) #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg text-sm border
+                    {% if category == 'danger' %} bg-red-100 text-red-800 border-red-200
+                    {% elif category == 'success' %} bg-green-100 text-green-800 border-green-200
+                    {% elif category == 'warning' %} bg-yellow-100 text-yellow-800 border-yellow-200
+                    {% else %} bg-blue-100 text-blue-800 border-blue-200 {% endif %}"
+                    role="alert">
+                    <span class="font-medium">
+                        {% if category == 'danger' %}Peligro
+                        {% elif category == 'success' %}Éxito
+                        {% elif category == 'warning' %}Advertencia
+                        {% else %}{{ category|capitalize }}{% endif %}:
+                    </span> {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {# --- Visão Geral do Período Filtrado (Sem alterações) --- #}
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl shadow-lg border border-indigo-200 mb-8">
+        <h3 class="text-lg font-semibold text-indigo-800 mb-2">Resumen del Periodo Filtrado</h3> {# Traduzido #}
+        <p class="text-sm text-indigo-700 opacity-90 mb-4 border-b border-indigo-200 pb-3">
+            Periodo: <span class="font-medium">{{ filtros_aplicados.data_inicio | date }}</span> a <span class="font-medium">{{ filtros_aplicados.data_fim | date }}</span> {# Traduzido "Período" #}
+            <br>Tipo: <span class="font-medium">{{ filtros_aplicados.tipo_transacao.replace('_', ' ')|title }}</span> {# Traduzir valores de tipo_transacao no backend se necessário #}
+             {% if filtros_aplicados.categoria_filtro != 'todas' %}
+                 | Categoría: <span class="font-medium">{{ filtros_aplicados.categoria_filtro }}</span> {# Traduzido "Categoria" #}
+             {% endif %}
+        </p>
+
+        {% if dados_relatorio %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 {% if filtros_aplicados.tipo_transacao == 'receitas' %}
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-green-700">Total Ingresos en el Periodo</p> {# Traduzido #}
+                            <p class="text-2xl font-bold text-green-600">{{ dados_relatorio.total_receitas | currency }}</p>
+                        </div>
+                    </div>
+                 {% else %} {# Gastos Variáveis ou Fixos #}
+                    <div class="flex items-center space-x-3">
+                         <div class="flex-shrink-0 bg-red-100 rounded-full p-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                         </div>
+                         <div>
+                            <p class="text-sm font-medium text-red-700">Total Egresos en el Periodo</p> {# Traduzido "Despesas" para "Egresos" #}
+                            <p class="text-2xl font-bold text-red-600">{{ dados_relatorio.total_despesas | currency }}</p>
+                         </div>
+                    </div>
+                 {% endif %}
+
+                <div class="flex items-center space-x-3">
+                     <div class="flex-shrink-0 bg-gray-100 rounded-full p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Comparativo (vs Periodo Similar Anterior)</p> {# Mantido #}
+                        {% if dados_relatorio.comparativo_percentual is not none %}
+                            {% set percentual = dados_relatorio.comparativo_percentual %}
+                            {% set valor_anterior = dados_relatorio.comparativo_valor_anterior %}
+                            <p class="text-lg font-bold
+                                {% if filtros_aplicados.tipo_transacao == 'receitas' %}
+                                    {% if percentual > 0 %} text-green-600 {% elif percentual < 0 %} text-red-600 {% else %} text-gray-700 {% endif %}
+                                {% else %} {# Despesas #}
+                                    {% if percentual > 0 %} text-red-600 {% elif percentual < 0 %} text-green-600 {% else %} text-gray-700 {% endif %}
+                                {% endif %}">
+                                {# Ícones de Seta #}
+                                {% if percentual > 0 %}<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                                {% elif percentual < 0 %}<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                {% endif %}
+                                {{ "%.1f"|format(percentual|abs) }}%
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                (Periodo anterior: {{ valor_anterior | currency }}) {# Traduzido #}
+                            </p>
+                        {% else %}
+                            <p class="text-lg font-bold text-gray-500">-</p>
+                            <p class="text-xs text-gray-400">(Sin datos para comparar)</p> {# Traduzido #}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-center text-indigo-600 py-4">No fue posible cargar el resumen.</p> {# Traduzido #}
+        {% endif %}
+    </div>
+
+    {# --- Tabela de Detalhes das Transações --- #}
+    {# A tabela agora usa a variável 'lista_transacoes' que contém apenas os itens da página atual #}
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 mb-8">
+        <h3 class="text-lg font-semibold text-gray-700 p-4 sm:p-6 border-b border-gray-200">Detalles de las Transacciones Filtradas</h3> {# Traduzido #}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="relatorios-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Fecha</th> {# Traduzido #}
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Descripción</th> {# Traduzido #}
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Categoría</th> {# Traduzido #}
+                        <th scope="col" class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Tipo</th> {# Mantido #}
+                        <th scope="col" class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Valor</th> {# Mantido #}
+                        <th scope="col" class="hidden lg:table-cell px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-3 lg:px-6">Acciones</th> {# Traduzido #}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="relatorios-table-body">
+                    {% if lista_transacoes %} {# Verifica a lista paginada #}
+                        {% for transacao in lista_transacoes %} {# Loop sobre a lista paginada #}
+                        <tr class="table-row-relatorio hover:bg-gray-50 transition-colors duration-150 relative lg:cursor-default"
+                            data-item-id="{{ transacao.id if transacao.id else 'salario' }}" {# Usa 'salario' como ID especial #}
+                            data-item-data="{{ transacao.data | date('%Y-%m-%d') }}"
+                            data-item-descricao="{{ transacao.descripcion }}"
+                            data-item-categoria="{{ transacao.categoria }}"
+                            data-item-valor="{{ transacao.valor }}"
+                            data-item-tipo="{{ transacao.tipo }}"
+                            >
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm whitespace-nowrap text-gray-600">{{ transacao.data | date }}</td>
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm text-gray-800 font-medium truncate" title="{{ transacao.descripcion }}">{{ transacao.descripcion | default('', true) }}</td>
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm text-gray-600 whitespace-nowrap">{{ transacao.categoria | default('S/C', true) }}</td> {# Traduzido N/A para S/C #}
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm whitespace-nowrap">
+                                {% if transacao.tipo == 'receita' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Ingreso</span> {# Traduzido #}
+                                {% elif transacao.tipo == 'gasto_variavel' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Gasto Variable</span> {# Traduzido #}
+                                {% elif transacao.tipo == 'gasto_fixo' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Gasto Fijo</span> {# Traduzido #}
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ transacao.tipo }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-2 py-3 text-xs sm:px-3 lg:px-6 sm:text-sm text-right font-medium whitespace-nowrap
+                                {% if transacao.tipo == 'receita' %} text-green-600
+                                {% else %} text-red-600 {% endif %}">
+                                {% if transacao.tipo == 'receita' %}+{% else %}-{% endif %}
+                                {{ transacao.valor | currency }}
+                            </td>
+                            <td class="hidden lg:table-cell px-2 py-3 text-xs sm:px-3 lg:px-6 whitespace-nowrap text-sm text-center">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <button type="button" title="Ver Detalles" class="inline-action-button open-view-relatorio-btn"> {# Traduzido title #}
+                                        <span class="sr-only">Detalles</span> {# Traduzido #}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        {# Mensagem de "Nenhuma transação" #}
+                        <tr>
+                            <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Ninguna transacción encontrada para los filtros seleccionados. {# Traduzido #}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {# --- PAGINAÇÃO ATUALIZADA --- #}
+    {# Mostrada apenas se houver mais de uma página #}
+    <div id="pagination-controls-relatorios-container" class="pagination-controls {% if total_pages <= 1 %}hidden{% endif %}">
+        {# Botão Anterior #}
+        <a href="{{ url_for('relatorios', page=current_page-1, **filtros_aplicados) if current_page > 1 else '#' }}"
+           class="{% if current_page <= 1 %}disabled{% endif %}"
+           aria-disabled="{{ 'true' if current_page <= 1 else 'false' }}">
+            &laquo; Anterior {# Mantido #}
+        </a>
+        {# Informação da Página #}
+        <span id="page-info-display-relatorios" class="page-number active">Página {{ current_page }} de {{ total_pages }}</span> {# Mantido #}
+        {# Botão Próxima #}
+        <a href="{{ url_for('relatorios', page=current_page+1, **filtros_aplicados) if current_page < total_pages else '#' }}"
+           class="{% if current_page >= total_pages %}disabled{% endif %}"
+           aria-disabled="{{ 'true' if current_page >= total_pages else 'false' }}">
+            Siguiente &raquo; {# Traduzido #}
+        </a>
+    </div>
+    {# --- FIM DA PAGINAÇÃO ATUALIZADA --- #}
+
+    {# --- Gráfico de Evolução (Sem alterações) --- #}
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow border border-gray-200 mb-8">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolución Diaria en el Periodo</h3> {# Traduzido #}
+        <div class="h-80 md:h-96">
+            <canvas id="graficoEvolucao"></canvas>
+        </div>
+    </div>
+
+    {# --- MODAIS (Sem alterações nos modais em si) --- #}
+
+    {# Modal de Filtro #}
+    <div id="filter-relatorios-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+        <div id="filter-relatorios-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-700">🔍 Filtrar Informe</h2> {# Traduzido #}
+                <button id="close-filter-relatorios-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <form method="GET" action="{{ url_for('relatorios') }}" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    <div>
+                        <label for="data_inicio_modal" class="block text-sm font-medium text-gray-700">Fecha Inicio:</label> {# Traduzido #}
+                        <input type="date" name="data_inicio" id="data_inicio_modal" value="{{ filtros_aplicados.data_inicio or '' }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm py-2 px-3">
+                    </div>
+                    <div>
+                        <label for="data_fim_modal" class="block text-sm font-medium text-gray-700">Fecha Fin:</label> {# Traduzido #}
+                        <input type="date" name="data_fim" id="data_fim_modal" value="{{ filtros_aplicados.data_fim or '' }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm py-2 px-3">
+                    </div>
+                    <div>
+                        <label for="tipo_transacao_modal" class="block text-sm font-medium text-gray-700">Tipo:</label> {# Mantido #}
+                        <select id="tipo_transacao_modal" name="tipo_transacao" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm h-[42px] bg-white py-2 px-3">
+                            <option value="gastos_variaveis" {% if filtros_aplicados.tipo_transacao == 'gastos_variaveis' %}selected{% endif %}>Gastos Variables</option> {# Traduzido #}
+                            <option value="gastos_fixos" {% if filtros_aplicados.tipo_transacao == 'gastos_fixos' %}selected{% endif %}>Gastos Fijos</option> {# Traduzido #}
+                            <option value="receitas" {% if filtros_aplicados.tipo_transacao == 'receitas' %}selected{% endif %}>Ingresos</option> {# Traduzido #}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="categoria_filtro_modal" class="block text-sm font-medium text-gray-700">Categoría:</label> {# Traduzido #}
+                        <select id="categoria_filtro_modal" name="categoria_filtro" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#55d83f] focus:ring-[#55d83f] sm:text-sm h-[42px] bg-white py-2 px-3">
+                            <option value="todas">Todas las Categorías</option> {# Traduzido #}
+                            {# Opções preenchidas por JS #}
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-2">
+                    <a href="{{ url_for('relatorios') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#55d83f]">
+                        🧹 Limpiar Filtros {# Traduzido #}
+                    </a>
+                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-black bg-[#55d83f] hover:bg-[#47b333] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#55d83f]">
+                        🚀 Aplicar Filtros {# Traduzido #}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Modal de Detalhes (View) #}
+    <div id="view-relatorio-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4 transition-opacity duration-300 opacity-0 modal-overlay">
+        <div id="view-relatorio-modal-content" class="bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-out scale-95 opacity-0 modal-content">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-700">ℹ️ Detalles de la Transacción</h2> {# Traduzido #}
+                <button id="close-view-relatorio-modal-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <p><strong>ID:</strong> <span id="view-relatorio-id" class="text-gray-700"></span></p>
+                <p><strong>Fecha:</strong> <span id="view-relatorio-data" class="text-gray-700"></span></p> {# Traduzido #}
+                <p><strong>Descripción:</strong> <span id="view-relatorio-descricao" class="text-gray-700 break-all"></span></p> {# Traduzido #}
+                <p><strong>Categoría:</strong> <span id="view-relatorio-categoria" class="text-gray-700"></span></p> {# Traduzido #}
+                <p><strong>Tipo:</strong> <span id="view-relatorio-tipo" class="text-gray-700 font-medium"></span></p> {# Mantido #}
+                <p><strong>Valor:</strong> <span id="view-relatorio-valor" class="font-semibold"></span></p> {# Mantido #}
+            </div>
+            <div class="flex justify-end pt-4 mt-4 border-t border-gray-200">
+                <button type="button" id="cancel-view-relatorio-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400">Cerrar</button> {# Traduzido #}
+            </div>
+        </div>
+    </div>
+
+    {# Modal de Ações Mobile #}
+    <div id="mobile-actions-relatorio-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-end justify-center z-50 hidden p-0 transition-opacity duration-300 opacity-0 lg:hidden modal-overlay">
+        <div id="mobile-actions-relatorio-modal-content" class="bg-white rounded-t-xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-out translate-y-full modal-content">
+            <div class="p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 text-center">📱 Acciones para Transacción</h3> {# Traduzido #}
+                <p class="text-sm text-gray-500 text-center" id="mobile-actions-relatorio-description"></p>
+            </div>
+            <div class="py-2">
+                <button class="action-button open-view-relatorio-btn-mobile">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                    Ver Detalles {# Traduzido #}
+                </button>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-b-xl">
+                <button id="cancel-mobile-actions-relatorio-modal-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 px-4 rounded-lg shadow-sm">Cancelar</button> {# Traduzido #}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{# Bloco de scripts específico #}
+{% block scripts %}
+    {{ super() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Funções auxiliares (reutilizadas)
+        function formatCurrencyJS(value) {
+             const numValue = Number(value);
+             if (isNaN(numValue)) { return '$ -'; } // Usando $ como fallback genérico
+             return numValue.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }); // CORRIGIDO para MXN
+        }
+
+        // Armazena as categorias e filtros atuais (passados pelo Flask)
+        const categoriasDisponiveis = {{ categorias_disponiveis | tojson | safe }};
+        const filtrosAtuais = {{ filtros_aplicados | tojson | safe }};
+        let currentRelatorioRowClicked = null; // Para modal mobile
+
+        function setupModal(modalId, openTriggers, closeBtnId, contentId, cancelBtnId, onOpenCallback, slideFromBottom = false) {
+             const modal = document.getElementById(modalId);
+             const content = document.getElementById(contentId);
+             const closeBtn = document.getElementById(closeBtnId);
+             const cancelBtn = cancelBtnId ? document.getElementById(cancelBtnId) : null;
+
+             function openModal(relatedTargetOrRow) {
+                 if (modal && content) {
+                    document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(otherModal => {
+                        if (otherModal.id !== modalId) {
+                            const otherContent = otherModal.querySelector('.modal-content');
+                            const otherCloseBtn = otherModal.querySelector('[id^="close-"], [id^="cancel-"]');
+                            if (otherCloseBtn) otherCloseBtn.click();
+                            else {
+                                if(otherContent) otherContent.classList.add('opacity-0', 'scale-95');
+                                otherModal.classList.add('opacity-0');
+                                setTimeout(() => otherModal.classList.add('hidden'), 300);
+                            }
+                        }
+                    });
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        content.classList.remove('opacity-0', 'scale-95', 'translate-y-full'); 
+                        if (slideFromBottom) {
+                            content.classList.add('translate-y-full');
+                            setTimeout(() => content.classList.remove('translate-y-full'), 10);
+                        } else {
+                            content.classList.add('opacity-100', 'scale-100');
+                        }
+                    }, 10);
+
+                    if (onOpenCallback && typeof onOpenCallback === 'function') {
+                        onOpenCallback(relatedTargetOrRow);
+                    }
+                }
+             }
+
+             function closeModal() {
+                 if (modal && content) {
+                    const slide = modal.id === 'mobile-actions-relatorio-modal'; 
+                    if (slide) { content.classList.add('translate-y-full'); }
+                    else { content.classList.remove('opacity-100', 'scale-100'); content.classList.add('opacity-0', 'scale-95'); }
+                    modal.classList.add('opacity-0');
+                    setTimeout(() => { modal.classList.add('hidden'); }, 300);
+                }
+             }
+
+            document.body.addEventListener('click', function(event) {
+                if (typeof openTriggers === 'string' && openTriggers.startsWith('.')) {
+                    const targetButton = event.target.closest(openTriggers);
+                    if (targetButton) { openModal(targetButton); }
+                }
+            });
+
+            if (typeof openTriggers === 'string' && !openTriggers.startsWith('.')) {
+                const staticOpenBtn = document.getElementById(openTriggers);
+                if (staticOpenBtn) { staticOpenBtn.addEventListener('click', (e) => { e.stopPropagation(); openModal(staticOpenBtn); }); }
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+            if (modal) { modal.addEventListener('click', function(event) { if (event.target === modal) closeModal(); }); }
+            return { openModal, closeModal };
+        }
+
+        const { openModal: openFilterModal } = setupModal(
+            'filter-relatorios-modal', 'open-filter-relatorios-modal-btn', 'close-filter-relatorios-modal-btn',
+            'filter-relatorios-modal-content', null, populateFilterModal
+        );
+        const { openModal: openViewRelatorioModal } = setupModal(
+            'view-relatorio-modal', '.open-view-relatorio-btn', 'close-view-relatorio-modal-btn',
+            'view-relatorio-modal-content', 'cancel-view-relatorio-modal-btn', populateViewRelatorioModal
+        );
+         const { openModal: openMobileActionsRelatorioModal, closeModal: closeMobileActionsRelatorioModal } = setupModal(
+            'mobile-actions-relatorio-modal', null, null, 
+            'mobile-actions-relatorio-modal-content', 'cancel-mobile-actions-relatorio-modal-btn',
+             populateMobileActionsRelatorioModal, true 
+        );
+
+        const tipoSelectModal = document.getElementById('tipo_transacao_modal');
+        const categoriaSelectModal = document.getElementById('categoria_filtro_modal');
+
+        function atualizarOpcoesCategoriaModal() {
+            if (!tipoSelectModal || !categoriaSelectModal) return;
+
+            const tipoSelecionado = tipoSelectModal.value;
+            const valorAtualCategoria = categoriaSelectModal.value; 
+            while (categoriaSelectModal.options.length > 1) { categoriaSelectModal.remove(1); }
+
+            let categoriasParaMostrar = [];
+            let grupoLabel = '';
+
+            if (tipoSelecionado === 'receitas' && categoriasDisponiveis.receitas) { categoriasParaMostrar = categoriasDisponiveis.receitas; grupoLabel = 'Ingresos'; } // Traduzido
+            else if (tipoSelecionado === 'gastos_variaveis' && categoriasDisponiveis.variaveis) { categoriasParaMostrar = categoriasDisponiveis.variaveis; grupoLabel = 'Gastos Variables'; } // Traduzido
+            else if (tipoSelecionado === 'gastos_fixos' && categoriasDisponiveis.fixas) { categoriasParaMostrar = categoriasDisponiveis.fixas; grupoLabel = 'Gastos Fijos'; } // Traduzido
+
+            if (categoriasParaMostrar.length > 0 && grupoLabel) {
+                const optgroup = document.createElement('optgroup'); optgroup.label = grupoLabel;
+                categoriasParaMostrar.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat; option.textContent = cat;
+                    if (cat === filtrosAtuais.categoria_filtro && tipoSelecionado === filtrosAtuais.tipo_transacao) {
+                         option.selected = true;
+                    }
+                    optgroup.appendChild(option);
+                });
+                categoriaSelectModal.appendChild(optgroup);
+            }
+            let filtroAtualValido = categoriaSelectModal.querySelector(`option[value="${filtrosAtuais.categoria_filtro}"]`);
+            if (!filtroAtualValido && tipoSelecionado !== filtrosAtuais.tipo_transacao) {
+                 categoriaSelectModal.value = 'todas';
+            } else if (filtroAtualValido && tipoSelecionado === filtrosAtuais.tipo_transacao) {
+                 categoriaSelectModal.value = filtrosAtuais.categoria_filtro; 
+            } else {
+                 categoriaSelectModal.value = valorAtualCategoria;
+            }
+        }
+
+        function populateFilterModal() {
+            const dataInicioInput = document.getElementById('data_inicio_modal');
+            const dataFimInput = document.getElementById('data_fim_modal');
+            if(dataInicioInput) dataInicioInput.value = filtrosAtuais.data_inicio || '';
+            if(dataFimInput) dataFimInput.value = filtrosAtuais.data_fim || '';
+            if(tipoSelectModal) tipoSelectModal.value = filtrosAtuais.tipo_transacao || 'gastos_variaveis';
+            atualizarOpcoesCategoriaModal();
+        }
+
+        function getRelatorioRowData(element) {
+            const row = element.closest('tr.table-row-relatorio');
+            if (!row) return null;
+            return row.dataset;
+        }
+
+        function populateViewRelatorioModal(triggerElementOrRow) {
+             const data = getRelatorioRowData(triggerElementOrRow);
+             if (!data) return;
+
+             document.getElementById('view-relatorio-id').textContent = data.itemId === 'salario' ? 'N/D (Salario)' : data.itemId; // Traduzido N/A
+             document.getElementById('view-relatorio-data').textContent = data.itemData ? new Date(data.itemData + 'T00:00:00').toLocaleDateString('es-MX', {timeZone: 'UTC'}) : 'N/D'; // Traduzido N/A e locale
+             document.getElementById('view-relatorio-descricao').textContent = data.itemDescricao;
+             document.getElementById('view-relatorio-categoria').textContent = data.itemCategoria;
+             let tipoFormatado = data.itemTipo.replace('_', ' ');
+             tipoFormatado = tipoFormatado.charAt(0).toUpperCase() + tipoFormatado.slice(1);
+             if(data.itemTipo === 'receita') tipoFormatado = 'Ingreso'; // Tradução específica
+             else if(data.itemTipo === 'gasto_variavel') tipoFormatado = 'Gasto Variable'; // Tradução específica
+             else if(data.itemTipo === 'gasto_fixo') tipoFormatado = 'Gasto Fijo'; // Tradução específica
+             document.getElementById('view-relatorio-tipo').textContent = tipoFormatado;
+
+             const valorEl = document.getElementById('view-relatorio-valor');
+             valorEl.textContent = formatCurrencyJS(data.itemValor);
+             valorEl.className = 'font-semibold'; 
+             if (data.itemTipo === 'receita') { valorEl.classList.add('text-green-600'); }
+             else { valorEl.classList.add('text-red-600'); }
+        }
+
+         function populateMobileActionsRelatorioModal(row) {
+            currentRelatorioRowClicked = row; 
+            const data = getRelatorioRowData(row);
+            if (!data) return;
+            const descriptionEl = document.getElementById('mobile-actions-relatorio-description');
+            if(descriptionEl) {
+                 descriptionEl.textContent = `ID: ${data.itemId === 'salario' ? 'Salario' : data.itemId} - ${data.itemDescricao.substring(0,30)}${data.itemDescricao.length > 30 ? '...' : ''}`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Página de Informes cargada."); // Traduzido console.log
+
+            if(tipoSelectModal && categoriaSelectModal) {
+                 populateFilterModal(); 
+                 tipoSelectModal.addEventListener('change', atualizarOpcoesCategoriaModal);
+            } else { console.warn("Elementos select de tipo o categoría del modal de filtro no encontrados."); } // Traduzido
+
+            const ctxEvolucao = document.getElementById('graficoEvolucao')?.getContext('2d');
+            let dadosGraficoFlask = {};
+            try {
+                const dadosJsonRaw = '{{ dados_grafico | tojson | safe }}';
+                dadosGraficoFlask = JSON.parse(dadosJsonRaw);
+            } catch (e) {
+                console.error("Error al parsear datos JSON para gráfico de evolución:", e); // Traduzido
+                dadosGraficoFlask = { labels: [], datasets: { receitas: [], despesas: [] } }; 
+            }
+
+       if (ctxEvolucao) {
+    const hasData = dadosGraficoFlask.labels && dadosGraficoFlask.labels.length > 0 &&
+                    (
+                        (dadosGraficoFlask.datasets.receitas && dadosGraficoFlask.datasets.receitas.some(v => v > 0)) ||
+                        (dadosGraficoFlask.datasets.despesas && dadosGraficoFlask.datasets.despesas.some(v => v > 0)) // <-- CORRIGIDO AQUI
+                    );
+                    
+                if (hasData) {
+                    if (window.graficoEvolucao instanceof Chart) { window.graficoEvolucao.destroy(); }
+                    window.graficoEvolucao = new Chart(ctxEvolucao, {
+                        type: 'line',
+                        data: {
+                            labels: dadosGraficoFlask.labels,
+                            datasets: [
+                                { label: 'Ingresos Diarios', data: dadosGraficoFlask.datasets.receitas || [], borderColor: 'rgb(34, 197, 94)', backgroundColor: 'rgba(34, 197, 94, 0.1)', tension: 0.1, fill: true, pointRadius: 3, pointHoverRadius: 5 }, // Traduzido
+                                { label: 'Egresos Diarios', data: dadosGraficoFlask.datasets.despesas || [], borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.1, fill: true, pointRadius: 3, pointHoverRadius: 5 } // Traduzido
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true, ticks: { callback: (value) => formatCurrencyJS(value) } } }, 
+                            plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false, callbacks: { label: (context) => `${context.dataset.label || ''}: ${formatCurrencyJS(context.parsed.y)}` } } },
+                            interaction: { mode: 'index', intersect: false }, 
+                        }
+                    });
+                    console.log("Gráfico de Evolución inicializado.");
+                } else {
+                    const containerGrafico = ctxEvolucao.canvas.parentElement;
+                    if (containerGrafico) { containerGrafico.innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-center text-gray-500">Sin datos para mostrar en el gráfico para el periodo seleccionado.</p></div>'; } // Traduzido
+                    console.log("Sin datos para el gráfico de evolución."); // Traduzido
+                }
+            } else { console.warn("Elemento canvas 'graficoEvolucao' não encontrado."); } // Traduzido
+
+            document.querySelectorAll('.open-view-relatorio-btn-mobile').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (currentRelatorioRowClicked) openViewRelatorioModal(currentRelatorioRowClicked);
+                    closeMobileActionsRelatorioModal();
+                });
+            });
+
+            const relatoriosTableBody = document.getElementById('relatorios-table-body');
+            if (relatoriosTableBody) {
+                relatoriosTableBody.addEventListener('click', function(event) {
+                    if (window.innerWidth < 1024) { 
+                         const row = event.target.closest('tr.table-row-relatorio');
+                         if (row && !event.target.closest('button, a')) {
+                             populateMobileActionsRelatorioModal(row);
+                             openMobileActionsRelatorioModal(row);
+                         }
+                    }
+                });
+            }
+
+        }); 
+    </script>
+{% endblock %}
