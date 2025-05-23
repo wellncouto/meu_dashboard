@@ -92,7 +92,7 @@
         {% endwith %}
 
         {# Formulário de Cadastro #}
-        <form action="{{ url_for('criar_conta') }}" method="POST">
+        <form action="{{ url_for('auth.criar_conta') }}" method="POST">
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Tu Correo Electrónico</label> {# Traduzido #}
                 {# Repopula o email se houve erro na submissão anterior #}
@@ -134,7 +134,7 @@
 
             <p class="mt-6 text-center text-sm" style="color: var(--text-muted);">
                 ¿Ya tienes cuenta? {# Traduzido #}
-                <a href="{{ url_for('login') }}" class="link-accent font-medium hover:underline">
+                <a href="{{ url_for('auth.login') }}" class="link-accent font-medium hover:underline">
                     Iniciar Sesión {# Traduzido #}
                 </a>
             </p>

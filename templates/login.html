@@ -89,7 +89,7 @@
         {% endwith %}
 
         {# Formulário #}
-        <form action="{{ url_for('login') }}" method="POST">
+        <form action="{{ url_for('auth.login') }}" method="POST">
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Correo Electrónico</label> {# Traduzido #}
                 <input type="email" id="email" name="email" required autofocus
@@ -115,14 +115,14 @@
             <div class="mt-6 text-center text-sm space-y-2"> {# Usando div para melhor espaçamento #}
                 {# Link Esqueci Senha #}
                 <p style="color: var(--text-muted);">
-                    <a href="{{ url_for('esqueci_senha_request') }}" class="link-accent hover:underline">
+                    <a href="{{ url_for('auth.esqueci_senha_request') }}" class="link-accent hover:underline">
                         Olvidé mi contraseña
                     </a> {# Traduzido #}
                 </p>
                 {# Link Criar Conta #}
                 <p style="color: var(--text-muted);">
                     ¿Aún no tienes cuenta?
-                    <a href="{{ url_for('criar_conta') }}" class="link-accent font-medium hover:underline">
+                    <a href="{{ url_for('auth.criar_conta') }}" class="link-accent font-medium hover:underline">
                         Crear Acceso
                     </a> {# Traduzido #}
                 </p>

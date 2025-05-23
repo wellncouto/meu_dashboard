@@ -44,19 +44,7 @@ def get_db_connection():
         return None
 
 # --- Funções Auxiliares ---
-def gerar_hash_senha(senha):
-    return generate_password_hash(senha, method='pbkdf2:sha256')
-
-def verificar_senha(hash_armazenado, senha_fornecida):
-    if not hash_armazenado: return False
-    return check_password_hash(hash_armazenado, senha_fornecida)
-
-def gerar_nome_schema(telefone_whatsapp):
-    if not telefone_whatsapp: return None
-    numeros_telefone = re.sub(r'\D', '', telefone_whatsapp)
-    if not numeros_telefone: return None
-    return f"user{numeros_telefone}"
-
+# As funções gerar_hash_senha, verificar_senha, e gerar_nome_schema foram movidas para auth.py
 
 def buscar_categorias_por_tipo(conn, user_schema, tipo_categoria):
     """
@@ -94,55 +82,8 @@ from dateutil.rrule import rrule, MONTHLY, YEARLY, DAILY # Você já deve ter WE
 
 # ... (resto do seu código Flask: app = Flask(...), get_db_connection(), etc.)
 
-# Função auxiliar para mapear recorrência (VERSÃO ATUALIZADA)
-def get_rrule_params(recurrencia_str_original):
-    if not isinstance(recurrencia_str_original, str):  # Verificação de tipo
-        logging.warning(f"get_rrule_params: Tipo de entrada inválido '{type(recurrencia_str_original)}', esperado string.")
-        return None
-
-    # Dicionário para traduzir variações comuns para termos padronizados
-    traducoes = {
-        'mensual': 'mensal',    # Espanhol -> Português (ou apenas para garantir consistência)
-        'monthly': 'mensal',    # Inglês -> Português
-        'anualmente': 'anual',  # Variação -> Padrão
-        'yearly': 'anual',      # Inglês -> Português
-        'unico': 'unico',       # Mantém 'unico' (já que 'único' com acento pode variar)
-        'único': 'unico',       # Português com acento -> Padrão sem acento
-        'única': 'unico',       # Variação feminina -> Padrão sem acento
-        # Adicione mais traduções conforme necessário. Ex:
-        # 'weekly': 'semanal',
-        # 'daily': 'diario',
-    }
-
-    # 1. Limpa a string: minúsculas e remove espaços extras nas bordas
-    recurrencia_limpa = recurrencia_str_original.lower().strip()
-    
-    # 2. Aplica a tradução para um termo padronizado
-    #    Se o termo limpo não estiver no dicionário de traduções, usa o próprio termo limpo.
-    termo_padronizado = traducoes.get(recurrencia_limpa, recurrencia_limpa)
-
-    # 3. Mapeia o termo padronizado para os parâmetros do rrule
-    if termo_padronizado == 'mensal':
-        return {'freq': MONTHLY, 'interval': 1}
-    elif termo_padronizado == 'bimestral':
-        return {'freq': MONTHLY, 'interval': 2}
-    elif termo_padronizado == 'trimestral':
-        return {'freq': MONTHLY, 'interval': 3}
-    elif termo_padronizado == 'semestral':
-        return {'freq': MONTHLY, 'interval': 6}
-    elif termo_padronizado == 'anual':
-        return {'freq': YEARLY, 'interval': 1}
-    # elif termo_padronizado == 'semanal':  # Exemplo se adicionar 'semanal'
-    #     return {'freq': WEEKLY, 'interval': 1}
-    # elif termo_padronizado == 'diario':   # Exemplo se adicionar 'diario'
-    #     return {'freq': DAILY, 'interval': 1}
-    elif termo_padronizado == 'unico':
-        # Para 'unico', a função retorna None, e a lógica principal do relatório tratará disso.
-        return None
-    else:
-        # Se, após limpeza e tradução, o termo ainda não for reconhecido.
-        logging.warning(f"Recorrência desconhecida. Original: '{recurrencia_str_original}', Processada como: '{termo_padronizado}'. Nenhuma regra definida corresponde.")
-        return None
+# Função auxiliar para mapear recorrência (VERSÃO ATUALIZADA) - A DEFINIÇÃO DUPLICADA FOI REMOVIDA DE CIMA
+# A definição restante está mais abaixo no código e será mantida.
 
 
 def format_currency_filter(value):
@@ -206,162 +147,13 @@ def json_converter(obj):
 
 
 # --- Rotas ---
+# --- Rotas ---
+# As rotas /login, /criar-conta, /logout, /esqueci-senha foram movidas para auth.py
 @app.route('/')
 def index():
-    if 'user_assinatura_id' in session: return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if 'user_assinatura_id' in session:
-        return redirect(url_for('dashboard'))
-    if request.method == 'POST':
-        email = request.form.get('email')
-        senha = request.form.get('senha')
-        if not email or not senha:
-            flash('Email e senha são obrigatórios.', 'danger')
-            return redirect(url_for('login'))
-        conn = get_db_connection()
-        if conn:
-            cur = None
-            try:
-                cur = conn.cursor(cursor_factory=DictCursor)
-                cur.execute("SELECT id, email, senha_hash, id_cliente_assinatura FROM clientes.dashboard_usuarios WHERE email = %s", (email,))
-                login_user = cur.fetchone()
-                if login_user and verificar_senha(login_user['senha_hash'], senha):
-                    cur.execute("SELECT id_interno, telefone_whatsapp, nome_cliente FROM clientes.assinaturas WHERE id_interno = %s", (login_user['id_cliente_assinatura'],))
-                    assinatura_info = cur.fetchone()
-                    if assinatura_info:
-                        schema_name = gerar_nome_schema(assinatura_info['telefone_whatsapp'])
-                        if schema_name:
-                            session.clear()
-                            session['user_dashboard_id'] = login_user['id']
-                            session['user_assinatura_id'] = assinatura_info['id_interno']
-                            session['user_email'] = login_user['email']
-                            session['user_schema'] = schema_name
-                            session['user_nome'] = assinatura_info['nome_cliente']
-                            session.permanent = True
-                            logging.info(f"Login bem-sucedido: {login_user['email']}, Schema: {schema_name}")
-                            return redirect(url_for('dashboard'))
-                        else:
-                            logging.error(f"Não foi possível gerar nome do schema para usuário {email}.")
-                            flash('Erro interno ao determinar o schema do usuário.', 'danger')
-                    else:
-                        logging.error(f"Assinatura ID {login_user['id_cliente_assinatura']} não encontrada para usuário {email}.")
-                        flash('Erro interno: dados da assinatura não encontrados.', 'danger')
-                else:
-                    logging.warning(f"Tentativa de login falhou para: {email} (email não cadastrado ou senha incorreta)")
-                    flash('Email ou senha incorretos.', 'danger')
-            except psycopg2.Error as e:
-                logging.error(f"Erro de banco de dados durante o login para {email}: {e}")
-                flash('Erro no banco de dados durante o login.', 'danger')
-            finally:
-                if cur: cur.close()
-                if conn: conn.close()
-        else:
-            flash('Não foi possível conectar ao banco de dados.', 'danger')
-        # Se chegou aqui, algo deu errado, renderiza login novamente
-        return render_template('login.html') # Renderiza fora do if/else de conexão
-    # Se for GET request
-    return render_template('login.html')
-
-
-
-
-@app.route('/criar-conta', methods=['GET', 'POST'])
-def criar_conta():
-    """
-    Rota para exibir o formulário de criação de conta do dashboard
-    e processar a submissão, validando contra a tabela de assinaturas.
-    """
-    if request.method == 'POST':
-        email = request.form.get('email')
-        senha = request.form.get('senha')
-        senha_confirmacao = request.form.get('senha_confirmacao')
-
-        # --- Validações Iniciais ---
-        if not email or not senha or not senha_confirmacao:
-            flash('Preencha email, senha e confirmação.', 'danger')
-            # Renderiza o template de novo, passando o email digitado de volta (opcional)
-            return render_template('criar_conta.html', email_previo=email)
-
-        if senha != senha_confirmacao:
-            flash('As senhas digitadas não conferem.', 'danger')
-            return render_template('criar_conta.html', email_previo=email)
-
-        # Você pode adicionar mais validações aqui (formato do email, força da senha, etc.)
-
-        conn = get_db_connection()
-        if not conn:
-            flash('Erro crítico: Não foi possível conectar ao banco de dados.', 'danger')
-            # Em caso de erro grave, talvez redirecionar para login seja melhor
-            return redirect(url_for('login'))
-
-        cur = None
-        try:
-            cur = conn.cursor(cursor_factory=DictCursor)
-
-            # 1. Verificar se o email JÁ TEM um acesso ao dashboard
-            cur.execute("SELECT id FROM clientes.dashboard_usuarios WHERE email = %s", (email,))
-            if cur.fetchone():
-                flash('Este email já possui um acesso ao dashboard. Tente fazer login ou recuperar a senha.', 'warning')
-                return redirect(url_for('login')) # Leva para login se já existe
-
-            # 2. Verificar se o email EXISTE na tabela de assinaturas
-            cur.execute("SELECT id_interno FROM clientes.assinaturas WHERE email = %s LIMIT 1", (email,))
-            assinatura = cur.fetchone()
-
-            if not assinatura:
-                flash('Email não encontrado em nossas assinaturas ativas. Verifique se digitou corretamente ou entre em contato.', 'danger')
-                return render_template('criar_conta.html', email_previo=email) # Mostra form de novo
-
-            # Se chegou aqui, o email existe na tabela de assinaturas e não tem acesso ao dashboard ainda
-            id_cliente_assinatura_encontrado = assinatura['id_interno']
-
-            # 3. Gerar hash da senha e Inserir no banco de dados
-            senha_hashed = gerar_hash_senha(senha) # Usa a função que você já tem
-
-            insert_query = sql.SQL("""
-                INSERT INTO clientes.dashboard_usuarios (email, senha_hash, id_cliente_assinatura)
-                VALUES (%s, %s, %s)
-            """)
-            cur.execute(insert_query, (email, senha_hashed, id_cliente_assinatura_encontrado))
-            conn.commit()
-
-            flash('¡Acceso al panel creado con éxito! Ya puedes iniciar sesión.', 'success')
-            logging.info(f"Novo acesso dashboard criado para email: {email}, ID Assinatura: {id_cliente_assinatura_encontrado}")
-            return redirect(url_for('login')) # Redireciona para login após criar com sucesso
-
-        except psycopg2.Error as e:
-            conn.rollback() # Desfaz a transação em caso de erro
-            flash('Error en la base de datos al intentar crear el acceso. Intenta nuevamente o contacta al soporte.', 'danger')
-            logging.error(f"Erro DB (criar_conta) para {email}: {e}")
-            # Retorna para o formulário em caso de erro de banco
-            return render_template('criar_conta.html', email_previo=email)
-        except Exception as e:
-            conn.rollback()
-            flash('Ocorreu um erro inesperado. Tente novamente mais tarde.', 'danger')
-            logging.error(f"Erro inesperado (criar_conta) para {email}: {e}", exc_info=True)
-            return render_template('criar_conta.html', email_previo=email)
-        finally:
-            # Garante que cursor e conexão sejam fechados
-            if cur: cur.close()
-            if conn: conn.close()
-
-    else: # Método GET
-        # Apenas mostra o formulário de criação
-        # Certifique-se que o arquivo 'templates/criar_conta.html' existe
-        return render_template('criar_conta.html')
-
-# ... (Resto das suas rotas: login, logout, dashboard, etc.)
-
-# --- Não se esqueça das rotas placeholder para esqueci_senha_request ---
-# ROTA PLACEHOLDER PARA SOLICITAR RESET DE SENHA
-@app.route('/esqueci-senha', methods=['GET'])
-def esqueci_senha_request():
-    # TODO: Implementar lógica de solicitar reset e template
-    # return render_template('esqueci_senha_request.html') # Quando criar o template
-    return "Página para Solicitar Redefinição de Senha (Em construção)"
+    if 'user_assinatura_id' in session: 
+        return redirect(url_for('dashboard')) # 'dashboard' permanece em app.py
+    return redirect(url_for('auth.login')) # Atualizado para o blueprint
 
 
 @app.route('/receitas/<int:item_id>/edit', methods=['POST'])
@@ -371,7 +163,7 @@ def edit_outra_receita(item_id):
     """
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('receitas') # Redireciona de volta para a lista de receitas
@@ -379,7 +171,7 @@ def edit_outra_receita(item_id):
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     logging.info(f"Tentativa de editar Outra Receita ID {item_id} no schema {user_schema}")
 
@@ -475,13 +267,13 @@ def categorias():
     """Exibe a página de gerenciamento de categorias."""
     if 'user_assinatura_id' not in session:
         flash('Você precisa fazer login para acessar esta página.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
     if not user_schema:
         flash('Erro interno: Informações do usuário incompletas.', 'danger')
-        session.clear(); return redirect(url_for('login'))
+        session.clear(); return redirect(url_for('auth.login')) # Atualizado
 
     lista_categorias = []
     conn = get_db_connection()
@@ -527,12 +319,12 @@ def categorias():
 def add_categoria():
     """Processa o formulário de adição de nova categoria, com limite para gastos variáveis."""
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning'); return redirect(url_for('login'))
+        flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('categorias')
     if not user_schema:
-        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('login'))
+        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
 
     nome_categoria = request.form.get('categoria_nome')
     tipo_categoria = request.form.get('categoria_tipo')
@@ -604,12 +396,12 @@ def add_categoria():
 def edit_categoria(categoria_id):
     """Processa o formulário de edição de categoria, impedindo edição de fixas."""
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning'); return redirect(url_for('login'))
+        flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('categorias')
     if not user_schema:
-        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('login'))
+        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
 
     nome_categoria = request.form.get('edit_categoria_nome')
     tipo_categoria = request.form.get('edit_categoria_tipo')
@@ -683,12 +475,12 @@ def edit_categoria(categoria_id):
 def delete_categoria(categoria_id):
     """Processa a exclusão de uma categoria, impedindo exclusão de fixas."""
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning'); return redirect(url_for('login'))
+        flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('categorias')
     if not user_schema:
-        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('login'))
+        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
 
     conn = get_db_connection()
     if not conn:
@@ -767,7 +559,7 @@ def delete_categoria(categoria_id):
 def save_lembrete():
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('lembretes') # Redireciona de volta para a lista de lembretes
@@ -775,7 +567,7 @@ def save_lembrete():
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # Obter dados do formulário
     lembrete_id = request.form.get('lembrete_id') # ID virá do input hidden se for edição
@@ -886,7 +678,7 @@ def delete_outra_receita(item_id):
     # 1. Verifica se o usuário está logado
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # 2. Obtém o schema do usuário da sessão
     user_schema = session.get('user_schema')
@@ -896,7 +688,7 @@ def delete_outra_receita(item_id):
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
         session.clear() # Limpa a sessão inválida
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     logging.info(f"Tentativa de excluir Outra Receita ID {item_id} no schema {user_schema}")
 
@@ -958,7 +750,7 @@ def delete_lembrete(item_id):
     """
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('lembretes') # Redireciona de volta para a lista
@@ -966,7 +758,7 @@ def delete_lembrete(item_id):
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     logging.info(f"Tentativa de excluir Lembrete ID {item_id} no schema {user_schema}")
 
@@ -1015,7 +807,7 @@ def edit_gasto(tipo_gasto, item_id):
     # Verifica se o usuário está logado
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     # URL para redirecionar após a ação (volta para a lista correta)
@@ -1025,7 +817,7 @@ def edit_gasto(tipo_gasto, item_id):
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
         session.clear() # Limpa a sessão inválida
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     logging.info(f"Tentativa de editar gasto ID {item_id} (Tipo: {tipo_gasto}) no schema {user_schema}")
 
@@ -1211,7 +1003,7 @@ def delete_gasto(tipo_gasto, item_id):
     # Verifica se o usuário está logado
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     # URL para redirecionar após a ação
@@ -1221,7 +1013,7 @@ def delete_gasto(tipo_gasto, item_id):
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     logging.info(f"Tentativa de excluir gasto ID {item_id} (Tipo: {tipo_gasto}) no schema {user_schema}")
 
@@ -1291,7 +1083,7 @@ ITEMS_PER_PAGE = 30
 def dashboard():
     if 'user_assinatura_id' not in session:
         flash('Você precisa fazer login para acessar esta página.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
@@ -1300,7 +1092,7 @@ def dashboard():
         logging.error(f"Schema não encontrado na sessão para usuário {user_nome} (ID: {session.get('user_assinatura_id')}) ao acessar /dashboard. Deslogando.")
         flash('Erro interno: Informações do usuário incompletas. Por favor, faça login novamente.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # --- INÍCIO DA LÓGICA DE SELEÇÃO DE PERÍODO ---
     periodo_selecionado = request.args.get('periodo', 'mes_atual')
@@ -1529,11 +1321,7 @@ def dashboard():
 
 
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('Cerraste sesión de tu cuenta.', 'info')
-    return redirect(url_for('login'))
+# A rota /logout foi movida para auth.py
 
 # --- Rotas de Gastos (Variáveis e Fixos) ---
 
@@ -1542,14 +1330,14 @@ def logout():
 def gastos():
     if 'user_assinatura_id' not in session:
         flash('Inicio de sesión necesario.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
     if not user_schema:
         flash('Erro interno.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # --- Obter Parâmetros da Requisição (Filtros, Ordenação, Página) ---
     tipo_gasto_ativo = request.args.get('tipo', 'variaveis').lower()
@@ -1741,7 +1529,7 @@ def add_gasto():
     # Verifica sessão
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     # Define URL de redirecionamento (pode vir do dashboard ou da página de gastos)
@@ -1751,7 +1539,7 @@ def add_gasto():
     if not user_schema:
         flash('Erro interno.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # Obtém dados do formulário
     descricao_form = request.form.get('descricao')
@@ -1825,7 +1613,7 @@ def add_gasto_fixo():
     # Verifica sessão
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     # Define URL de redirecionamento
@@ -1835,7 +1623,7 @@ def add_gasto_fixo():
     if not user_schema:
         flash('Erro interno.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # Obtém dados do formulário
     descricao = request.form.get('descricao_fixo')
@@ -1917,9 +1705,9 @@ def add_gasto_fixo():
 # --- Rotas de Lembretes ---
 @app.route('/lembretes')
 def lembretes():
-    if 'user_assinatura_id' not in session: flash('Login necessário.', 'warning'); return redirect(url_for('login'))
+    if 'user_assinatura_id' not in session: flash('Login necessário.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
     user_schema = session.get('user_schema'); user_nome = session.get('user_nome', session.get('user_email'))
-    if not user_schema: flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('login'))
+    if not user_schema: flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
     lista_de_lembretes = []
     conn = get_db_connection()
     if conn:
@@ -1938,7 +1726,7 @@ def add_lembrete_from_modal():
     # 1. Verifica sessão
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # 2. Obtém schema e URL de redirecionamento
     user_schema = session.get('user_schema')
@@ -1949,7 +1737,7 @@ def add_lembrete_from_modal():
     if not user_schema:
         flash('Erro interno.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # --- 3. Obter e Validar Dados do Formulário ---
     descricao = request.form.get('descricao_lembrete')
@@ -2033,7 +1821,7 @@ def receitas():
     # Verifica login
     if 'user_assinatura_id' not in session:
         flash('Você precisa fazer login para acessar esta página.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
@@ -2042,7 +1830,7 @@ def receitas():
     if not user_schema:
         flash('Erro interno: Informações do usuário incompletas.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     conn = get_db_connection()
     if not conn:
@@ -2198,7 +1986,7 @@ def add_outra_receita():
     # Verifica sessão
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     # Define URL de redirecionamento
@@ -2208,7 +1996,7 @@ def add_outra_receita():
     if not user_schema:
         flash('Erro interno.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # Obtém dados do formulário
     data_receita_str = request.form.get('data_outra_receita')
@@ -2283,12 +2071,12 @@ def add_outra_receita():
 def metas():
     if 'user_assinatura_id' not in session:
         flash('Você precisa fazer login.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     if not user_schema:
         flash('Erro interno: Schema do usuário não encontrado.', 'danger')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     conn = get_db_connection()
     if not conn:
@@ -2365,9 +2153,9 @@ def metas():
 
 @app.route('/cancelar_meta', methods=['POST'])
 def cancelar_meta():
-    if 'user_assinatura_id' not in session: flash('Sessão expirada.', 'warning'); return redirect(url_for('login'))
+    if 'user_assinatura_id' not in session: flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
     user_schema = session.get('user_schema'); redirect_url = url_for('dashboard')
-    if not user_schema: flash('Erro interno.', 'danger'); return redirect(url_for('login'))
+    if not user_schema: flash('Erro interno.', 'danger'); return redirect(url_for('auth.login')) # Atualizado
     conn = get_db_connection();
     if not conn: flash('Erro conexão DB.', 'danger'); return redirect(redirect_url)
     cur = None
@@ -2391,13 +2179,13 @@ def cancelar_meta():
 def add_progresso_meta():
     if 'user_assinatura_id' not in session:
         flash('Sessão expirada.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('dashboard') # Sempre redireciona para dashboard nesta ação
     if not user_schema:
         flash('Erro interno.', 'danger')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     valor_adicionado_str = request.form.get('valor_progresso')
 
@@ -2472,14 +2260,14 @@ def add_progresso_meta():
 def relatorios():
     if 'user_assinatura_id' not in session:
         flash('Você precisa fazer login para acessar esta página.', 'warning')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
     if not user_schema:
         flash('Erro interno: Informações do usuário incompletas.', 'danger')
         session.clear()
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login')) # Atualizado
 
     # --- Processamento de Filtros ---
     today = date.today()
@@ -2514,7 +2302,7 @@ def relatorios():
     dados_relatorio = { "total_receitas": Decimal('0.00'), "total_despesas": Decimal('0.00'), "comparativo_percentual": None, "comparativo_valor_anterior": None }
     dados_grafico = { "labels": [], "datasets": { "receitas": [], "despesas": [] } }
     categorias_disponiveis = {'receitas': [], 'variaveis': [], 'fixas': []}
-    transacoes_raw = [] # Lista temporária para todas as transações filtradas
+    # transacoes_raw = [] # Esta variável será preenchida de forma diferente dependendo do tipo
     lista_transacoes_paginada = [] # Lista final para o template (apenas itens da página)
     total_items = 0
     total_pages = 1
@@ -2537,103 +2325,351 @@ def relatorios():
         query_cat_var = sql.SQL("SELECT DISTINCT categoria FROM {}.gastos WHERE categoria IS NOT NULL ORDER BY categoria").format(sql.Identifier(user_schema)); cur.execute(query_cat_var); categorias_disponiveis['variaveis'] = [r['categoria'] for r in cur.fetchall()]
         query_cat_fix = sql.SQL("SELECT DISTINCT categoria FROM {}.gastos_fixos WHERE categoria IS NOT NULL ORDER BY categoria").format(sql.Identifier(user_schema)); cur.execute(query_cat_fix); categorias_disponiveis['fixas'] = [r['categoria'] for r in cur.fetchall()]
 
-        # --- Buscar Transações e Calcular Totais (igual a antes, mas armazena em transacoes_raw) ---
-        total_receitas_periodo = Decimal('0.00'); total_despesas_periodo = Decimal('0.00')
-        receitas_diarias = {}; despesas_diarias = {}
+        # --- Calcular Totais para dados_relatorio e dados_grafico (ANTES DA PAGINAÇÃO DE EXIBIÇÃO) ---
+        # Esta parte calcula os totais e os dados para os gráficos usando todos os dados filtrados,
+        # independentemente da página que será exibida na tabela.
+        total_receitas_periodo_completo = Decimal('0.00')
+        total_despesas_periodo_completo = Decimal('0.00')
+        receitas_diarias_completo = {}
+        despesas_diarias_completo = {}
         dias_no_periodo_list = []
+
         if data_inicio <= data_fim:
-            query_dias = sql.SQL("SELECT generate_series(%s::date, %s::date, '1 day'::interval)::date as dia"); cur.execute(query_dias, (data_inicio, data_fim)); dias_no_periodo_list = [r['dia'] for r in cur.fetchall()]
-            receitas_diarias = {d: Decimal(0) for d in dias_no_periodo_list}; despesas_diarias = {d: Decimal(0) for d in dias_no_periodo_list}
+            query_dias = sql.SQL("SELECT generate_series(%s::date, %s::date, '1 day'::interval)::date as dia")
+            cur.execute(query_dias, (data_inicio, data_fim))
+            dias_no_periodo_list = [r['dia'] for r in cur.fetchall()]
+            receitas_diarias_completo = {d: Decimal(0) for d in dias_no_periodo_list}
+            despesas_diarias_completo = {d: Decimal(0) for d in dias_no_periodo_list}
 
-        salario_config = Decimal('0.00')
-        query_config = sql.SQL("SELECT ingreso FROM {}.config WHERE id = 1").format(sql.Identifier(user_schema)); cur.execute(query_config); config_data = cur.fetchone()
-        if config_data and config_data['ingreso'] is not None: salario_config = config_data['ingreso']
+        # Salário (para cálculo de total de receitas do período completo) - REMOVIDO
+        # salario_config_completo = Decimal('0.00')
+        # query_config_completo = sql.SQL("SELECT ingreso FROM {}.config WHERE id = 1").format(sql.Identifier(user_schema))
+        # cur.execute(query_config_completo)
+        # config_data_completo = cur.fetchone()
+        # if config_data_completo and config_data_completo['ingreso'] is not None:
+        #     salario_config_completo = config_data_completo['ingreso']
 
-        # 1. Receitas
-        if tipo_transacao_filtro == 'receitas':
-            where_receitas = [sql.SQL("fecha BETWEEN %s AND %s")]; params_receitas = [data_inicio, data_fim]
-            if categoria_filtro != 'todas':
-                if categoria_filtro in categorias_disponiveis['receitas']: where_receitas.append(sql.SQL("categoria = %s")); params_receitas.append(categoria_filtro)
-                else: where_receitas.append(sql.SQL("1 = 0")) # Categoria inválida, não busca nada
-            query_det_receitas = sql.SQL("SELECT id, fecha as data, descripcion, categoria, valor, 'receita' as tipo FROM {schema}.outras_receitas WHERE {where} ORDER BY fecha DESC, id DESC").format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_receitas))
-            cur.execute(query_det_receitas, params_receitas); outras_receitas_list = cur.fetchall()
-            transacoes_raw.extend(outras_receitas_list) # Adiciona à lista crua
-            for t in outras_receitas_list:
-                total_receitas_periodo += t['valor']
-                if t['data'] in receitas_diarias: receitas_diarias[t['data']] += t['valor']
-            # Adiciona salário se aplicável
-            if salario_config > 0 and categoria_filtro == 'todas':
-                for dia1 in list(rrule(MONTHLY, dtstart=data_inicio, until=data_fim, bymonthday=1)):
-                    dia_date = dia1.date()
-                    if data_inicio <= dia_date <= data_fim: # Garante que o dia 1 esteja no período exato
-                        total_receitas_periodo += salario_config
-                        if dia_date in receitas_diarias: receitas_diarias[dia_date] += salario_config
-                        # Adiciona salário à lista crua para exibição na tabela
-                        transacoes_raw.append({'id': None, 'data': dia_date, 'descripcion': 'Salário Principal', 'categoria': 'Salário', 'valor': salario_config, 'tipo': 'receita'})
+        # Calcular total de receitas do período completo (Outras Receitas)
+        where_receitas_completo = [sql.SQL("fecha BETWEEN %s AND %s")]
+        params_receitas_completo = [data_inicio, data_fim]
+        # Não aplicamos filtro de categoria aqui, pois queremos o total para o gráfico e resumo
+        query_sum_receitas_completo = sql.SQL(
+            "SELECT fecha, valor FROM {schema}.outras_receitas WHERE {where}"
+        ).format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_receitas_completo))
+        cur.execute(query_sum_receitas_completo, params_receitas_completo)
+        for rec in cur.fetchall():
+            total_receitas_periodo_completo += rec['valor']
+            if rec['fecha'] in receitas_diarias_completo:
+                receitas_diarias_completo[rec['fecha']] += rec['valor']
+        
+        # Adicionar salário ao total de receitas do período completo - REMOVIDO
+        # if salario_config_completo > 0:
+        #     for dia1_completo in list(rrule(MONTHLY, dtstart=data_inicio, until=data_fim, bymonthday=1)):
+        #         dia_date_completo = dia1_completo.date()
+        #         if data_inicio <= dia_date_completo <= data_fim:
+        #             total_receitas_periodo_completo += salario_config_completo
+        #             if dia_date_completo in receitas_diarias_completo:
+        #                 receitas_diarias_completo[dia_date_completo] += salario_config_completo
 
-        # 2. Gastos Variáveis
-        elif tipo_transacao_filtro == 'gastos_variaveis':
-            where_gastos_var = [sql.SQL("data BETWEEN %s AND %s")]; params_gastos_var = [data_inicio, data_fim]
-            if categoria_filtro != 'todas':
-                if categoria_filtro in categorias_disponiveis['variaveis']: where_gastos_var.append(sql.SQL("categoria = %s")); params_gastos_var.append(categoria_filtro)
-                else: where_gastos_var.append(sql.SQL("1 = 0"))
-            query_det_gastos_var = sql.SQL("SELECT id, data, descripcion, categoria, valor, 'gasto_variavel' as tipo FROM {schema}.gastos WHERE {where} ORDER BY data DESC, id DESC").format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gastos_var))
-            cur.execute(query_det_gastos_var, params_gastos_var); gastos_var_list = cur.fetchall()
-            transacoes_raw.extend(gastos_var_list) # Adiciona à lista crua
-            for t in gastos_var_list:
-                total_despesas_periodo += t['valor']
-                if t['data'] in despesas_diarias: despesas_diarias[t['data']] += t['valor']
+        # Calcular total de despesas do período completo (Gastos Variáveis)
+        where_gastos_var_completo = [sql.SQL("data BETWEEN %s AND %s")]
+        params_gastos_var_completo = [data_inicio, data_fim]
+        query_sum_gastos_var_completo = sql.SQL(
+            "SELECT data, valor FROM {schema}.gastos WHERE {where}"
+        ).format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gastos_var_completo))
+        cur.execute(query_sum_gastos_var_completo, params_gastos_var_completo)
+        for gv_comp in cur.fetchall():
+            total_despesas_periodo_completo += gv_comp['valor']
+            if gv_comp['data'] in despesas_diarias_completo:
+                despesas_diarias_completo[gv_comp['data']] += gv_comp['valor']
 
-        # 3. Gastos Fixos
-        elif tipo_transacao_filtro == 'gastos_fixos':
-            # Lógica para buscar e processar rrule (igual a antes, mas adiciona a transacoes_raw)
-            where_gastos_fix = [sql.SQL("activo = TRUE"), sql.SQL("fecha_inicio <= %s")]; params_gastos_fix = [data_fim]
-            if categoria_filtro != 'todas':
-                if categoria_filtro in categorias_disponiveis['fixas']: where_gastos_fix.append(sql.SQL("categoria = %s")); params_gastos_fix.append(categoria_filtro)
-                else: where_gastos_fix.append(sql.SQL("1 = 0"))
-            query_base_fixos = sql.SQL("SELECT id, fecha_inicio, descripcion, categoria, valor, recurrencia FROM {schema}.gastos_fixos WHERE {where}").format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gastos_fix))
-            cur.execute(query_base_fixos, params_gastos_fix); gastos_fixos_ativos = cur.fetchall()
-            for gf in gastos_fixos_ativos:
-                rrule_params = get_rrule_params(gf['recurrencia'])
-                if rrule_params:
-                    try:
-                        occurrences = list(rrule(dtstart=gf['fecha_inicio'], until=data_fim, **rrule_params))
-                        for occ_dt in occurrences:
-                            occ_date = occ_dt.date()
-                            if data_inicio <= occ_date <= data_fim:
-                                total_despesas_periodo += gf['valor']
-                                transacoes_raw.append({'data': occ_date, 'descripcion': gf['descripcion'], 'categoria': gf['categoria'], 'valor': gf['valor'], 'tipo': 'gasto_fixo', 'id': gf['id']})
-                                if occ_date in despesas_diarias: despesas_diarias[occ_date] += gf['valor']
-                                else: despesas_diarias[occ_date] = gf['valor'] # Adiciona se não existe
-                    except Exception as e_rrule: logging.error(f"Relatorios Gasto Fixo ID {gf['id']} rrule error: {e_rrule}")
-                else: # Trata 'unico' ou inválido
-                    term = gf['recurrencia'].lower().strip()
-                    if hasattr(get_rrule_params, 'traducoes'): term = get_rrule_params.traducoes.get(term, term)
-                    if term == 'unico' and data_inicio <= gf['fecha_inicio'] <= data_fim:
-                        total_despesas_periodo += gf['valor']
-                        transacoes_raw.append({'data': gf['fecha_inicio'], 'descripcion': gf['descripcion'], 'categoria': gf['categoria'], 'valor': gf['valor'], 'tipo': 'gasto_fixo', 'id': gf['id']})
-                        if gf['fecha_inicio'] in despesas_diarias: despesas_diarias[gf['fecha_inicio']] += gf['valor']
-                        else: despesas_diarias[gf['fecha_inicio']] = gf['valor']
+        # Calcular total de despesas do período completo (Gastos Fixos)
+        where_gf_completo = [sql.SQL("activo = TRUE"), sql.SQL("fecha_inicio <= %s")]
+        params_gf_completo = [data_fim]
+        query_base_fixos_completo = sql.SQL(
+            "SELECT fecha_inicio, valor, recurrencia FROM {schema}.gastos_fixos WHERE {where}"
+        ).format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gf_completo))
+        cur.execute(query_base_fixos_completo, params_gf_completo)
+        gastos_fixos_ativos_completo = cur.fetchall()
+        for gf_comp in gastos_fixos_ativos_completo:
+            rrule_params_comp = get_rrule_params(gf_comp['recurrencia'])
+            if rrule_params_comp:
+                try:
+                    occurrences_comp = list(rrule(dtstart=gf_comp['fecha_inicio'], until=data_fim, **rrule_params_comp))
+                    for occ_dt_comp in occurrences_comp:
+                        occ_date_comp = occ_dt_comp.date()
+                        if data_inicio <= occ_date_comp <= data_fim:
+                            total_despesas_periodo_completo += gf_comp['valor']
+                            if occ_date_comp in despesas_diarias_completo:
+                                despesas_diarias_completo[occ_date_comp] += gf_comp['valor']
+                except Exception as e_rrule_comp:
+                    logging.error(f"Relatorios (completo) Gasto Fixo rrule error: {e_rrule_comp}")
+            elif gf_comp['recurrencia'].lower().strip() in ['unico', 'único', 'única'] and data_inicio <= gf_comp['fecha_inicio'] <= data_fim:
+                total_despesas_periodo_completo += gf_comp['valor']
+                if gf_comp['fecha_inicio'] in despesas_diarias_completo:
+                    despesas_diarias_completo[gf_comp['fecha_inicio']] += gf_comp['valor']
+        
+        dados_relatorio['total_receitas'] = total_receitas_periodo_completo
+        dados_relatorio['total_despesas'] = total_despesas_periodo_completo
 
-        # Ordenar a lista final (crua) por data antes de paginar
-        transacoes_raw.sort(key=lambda x: x['data'], reverse=True)
-
-        # --- Paginação em Python (NOVO) ---
-        total_items = len(transacoes_raw)
-        total_pages = ceil(total_items / ITEMS_PER_PAGE) if total_items > 0 else 1
-        current_page = min(page, total_pages) if total_pages > 0 else 1 # Garante que a página seja válida
-        offset = (current_page - 1) * ITEMS_PER_PAGE
-        # Pega apenas o "pedaço" da lista para a página atual
-        lista_transacoes_paginada = transacoes_raw[offset : offset + ITEMS_PER_PAGE]
-        logging.info(f"Paginação Relatórios: Itens totais={total_items}, Páginas={total_pages}, Página Atual={current_page}, Offset={offset}, Itens na Página={len(lista_transacoes_paginada)}")
-        # --- Fim da Paginação ---
-
-        # Atribui totais calculados
-        dados_relatorio['total_receitas'] = total_receitas_periodo
-        dados_relatorio['total_despesas'] = total_despesas_periodo
-
-        # --- Preparar Dados para Gráfico de Linha (igual a antes) ---
         dados_grafico['labels'] = [d.strftime('%d/%m') for d in dias_no_periodo_list]
+        dados_grafico['datasets']['receitas'] = [float(receitas_diarias_completo.get(dia, 0)) for dia in dias_no_periodo_list]
+        dados_grafico['datasets']['despesas'] = [float(despesas_diarias_completo.get(dia, 0)) for dia in dias_no_periodo_list]
+        
+        # --- FIM DO CÁLCULO DE TOTAIS PARA GRÁFICOS E RESUMO ---
+
+        # --- Início da Lógica de Busca Paginada para a Tabela ---
+        query_params_paginado = []
+        where_clauses_paginado = []
+        
+        # Salário (para exibição na tabela de receitas, se aplicável) - REMOVIDO
+        # salario_config_tabela = Decimal('0.00')
+        # Reutiliza a query de config já feita, se não for problema de performance.
+        # Caso contrário, buscaria de novo: query_config_tab = sql.SQL("SELECT ingreso FROM {}.config WHERE id = 1")...
+        # if config_data_completo and config_data_completo['ingreso'] is not None: # Reutilizando config_data_completo
+        #     salario_config_tabela = config_data_completo['ingreso']
+
+
+        if tipo_transacao_filtro == 'receitas':
+            table_name = sql.Identifier('outras_receitas')
+            date_column = sql.Identifier('fecha')
+            select_cols = sql.SQL("id, fecha as data, descripcion, categoria, valor, 'receita' as tipo")
+            
+            where_clauses_paginado.append(sql.SQL("{date_col} BETWEEN %s AND %s").format(date_col=date_column))
+            query_params_paginado.extend([data_inicio, data_fim])
+
+            if categoria_filtro != 'todas':
+                if categoria_filtro in categorias_disponiveis['receitas']:
+                    where_clauses_paginado.append(sql.SQL("categoria = %s"))
+                    query_params_paginado.append(categoria_filtro)
+                else: # Categoria inválida, não busca nada
+                    where_clauses_paginado.append(sql.SQL("1 = 0")) 
+            
+            # Para receitas, precisamos considerar o salário que não está na tabela `outras_receitas`
+            # A paginação SQL direta é complexa com UNION ou dados fora da tabela.
+            # Vamos buscar todas as "outras_receitas" filtradas e adicionar o salário ANTES de paginar em Python.
+            # Esta é uma exceção à paginação SQL direta para 'receitas' devido ao salário.
+            
+            transacoes_raw_receitas = []
+            if where_clauses_paginado: # Evita query se for "1=0"
+                query_det_receitas_paginado = sql.SQL("SELECT {cols} FROM {schema}.{table} WHERE {where} ORDER BY {date_col} DESC, id DESC").format(
+                    cols=select_cols, schema=sql.Identifier(user_schema), table=table_name, 
+                    where=sql.SQL(' AND ').join(where_clauses_paginado), date_col=date_column
+                )
+                cur.execute(query_det_receitas_paginado, query_params_paginado)
+                transacoes_raw_receitas.extend(cur.fetchall())
+
+            # Adiciona salário se aplicável (APENAS se categoria_filtro for 'todas' ou 'Salário') - REMOVIDO
+            # if salario_config_tabela > 0 and (categoria_filtro == 'todas' or categoria_filtro == 'Salário'):
+            #     for dia1_salario in list(rrule(MONTHLY, dtstart=data_inicio, until=data_fim, bymonthday=1)):
+            #         dia_date_salario = dia1_salario.date()
+            #         if data_inicio <= dia_date_salario <= data_fim:
+            #             transacoes_raw_receitas.append({
+            #                 'id': None, 'data': dia_date_salario, 'descripcion': 'Salário Principal', 
+            #                 'categoria': 'Salário', 'valor': salario_config_tabela, 'tipo': 'receita'
+            #             })
+            
+            transacoes_raw_receitas.sort(key=lambda x: x['data'], reverse=True) # Ordena antes de paginar
+            total_items = len(transacoes_raw_receitas)
+            total_pages = ceil(total_items / ITEMS_PER_PAGE) if total_items > 0 else 1
+            current_page = min(page, total_pages) if total_pages > 0 else 1
+            offset = (current_page - 1) * ITEMS_PER_PAGE
+            lista_transacoes_paginada = transacoes_raw_receitas[offset : offset + ITEMS_PER_PAGE]
+
+        elif tipo_transacao_filtro == 'gastos_variaveis':
+            table_name = sql.Identifier('gastos')
+            date_column = sql.Identifier('data')
+            select_cols = sql.SQL("id, data, descripcion, categoria, valor, 'gasto_variavel' as tipo")
+
+            where_clauses_paginado.append(sql.SQL("{date_col} BETWEEN %s AND %s").format(date_col=date_column))
+            query_params_paginado.extend([data_inicio, data_fim])
+
+            if categoria_filtro != 'todas':
+                if categoria_filtro in categorias_disponiveis['variaveis']:
+                    where_clauses_paginado.append(sql.SQL("categoria = %s"))
+                    query_params_paginado.append(categoria_filtro)
+                else:
+                    where_clauses_paginado.append(sql.SQL("1 = 0"))
+
+            where_sql_paginado = sql.SQL(' AND ').join(where_clauses_paginado) if where_clauses_paginado else sql.SQL("1=1")
+
+            # Count query
+            count_query_gv = sql.SQL("SELECT COUNT(*) FROM {schema}.{table} WHERE {where}").format(
+                schema=sql.Identifier(user_schema), table=table_name, where=where_sql_paginado
+            )
+            cur.execute(count_query_gv, query_params_paginado)
+            total_items = cur.fetchone()[0]
+            total_pages = ceil(total_items / ITEMS_PER_PAGE) if total_items > 0 else 1
+            current_page = min(page, total_pages) if total_pages > 0 else 1
+            offset = (current_page - 1) * ITEMS_PER_PAGE
+
+            # Main query com LIMIT e OFFSET
+            query_det_gastos_var_paginado = sql.SQL(
+                "SELECT {cols} FROM {schema}.{table} WHERE {where} ORDER BY {date_col} DESC, id DESC LIMIT %s OFFSET %s"
+            ).format(cols=select_cols, schema=sql.Identifier(user_schema), table=table_name, where=where_sql_paginado, date_col=date_column)
+            
+            params_main_gv = query_params_paginado + [ITEMS_PER_PAGE, offset]
+            cur.execute(query_det_gastos_var_paginado, params_main_gv)
+            lista_transacoes_paginada = cur.fetchall()
+
+        elif tipo_transacao_filtro == 'gastos_fixos':
+            # Mantém a lógica de expansão em Python e paginação em Python para gastos fixos
+            transacoes_raw_fixos = []
+            where_gf_pag = [sql.SQL("activo = TRUE"), sql.SQL("fecha_inicio <= %s")]
+            params_gf_pag = [data_fim]
+            if categoria_filtro != 'todas':
+                if categoria_filtro in categorias_disponiveis['fixas']:
+                    where_gf_pag.append(sql.SQL("categoria = %s"))
+                    params_gf_pag.append(categoria_filtro)
+                else:
+                    where_gf_pag.append(sql.SQL("1 = 0")) # Categoria inválida, não busca nada
+            
+            query_base_fixos_pag = sql.SQL(
+                "SELECT id, fecha_inicio, descripcion, categoria, valor, recurrencia FROM {schema}.gastos_fixos WHERE {where}"
+            ).format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gf_pag))
+            
+            cur.execute(query_base_fixos_pag, params_gf_pag)
+            gastos_fixos_ativos_pag = cur.fetchall()
+
+            for gf_pag in gastos_fixos_ativos_pag:
+                rrule_params_pag = get_rrule_params(gf_pag['recurrencia'])
+                if rrule_params_pag:
+                    try:
+                        occurrences_pag = list(rrule(dtstart=gf_pag['fecha_inicio'], until=data_fim, **rrule_params_pag))
+                        for occ_dt_pag in occurrences_pag:
+                            occ_date_pag = occ_dt_pag.date()
+                            if data_inicio <= occ_date_pag <= data_fim:
+                                transacoes_raw_fixos.append({
+                                    'data': occ_date_pag, 'descripcion': gf_pag['descripcion'], 
+                                    'categoria': gf_pag['categoria'], 'valor': gf_pag['valor'], 
+                                    'tipo': 'gasto_fixo', 'id': gf_pag['id']
+                                })
+                    except Exception as e_rrule_pag:
+                        logging.error(f"Relatorios (paginado) Gasto Fixo ID {gf_pag['id']} rrule error: {e_rrule_pag}")
+                elif gf_pag['recurrencia'].lower().strip() in ['unico', 'único', 'única'] and data_inicio <= gf_pag['fecha_inicio'] <= data_fim:
+                    transacoes_raw_fixos.append({
+                        'data': gf_pag['fecha_inicio'], 'descripcion': gf_pag['descripcion'], 
+                        'categoria': gf_pag['categoria'], 'valor': gf_pag['valor'], 
+                        'tipo': 'gasto_fixo', 'id': gf_pag['id']
+                    })
+            
+            transacoes_raw_fixos.sort(key=lambda x: x['data'], reverse=True) # Ordena antes de paginar
+            total_items = len(transacoes_raw_fixos)
+            total_pages = ceil(total_items / ITEMS_PER_PAGE) if total_items > 0 else 1
+            current_page = min(page, total_pages) if total_pages > 0 else 1
+            offset = (current_page - 1) * ITEMS_PER_PAGE
+            lista_transacoes_paginada = transacoes_raw_fixos[offset : offset + ITEMS_PER_PAGE]
+
+        logging.info(f"Paginação Relatórios ({tipo_transacao_filtro}): Itens totais={total_items}, Páginas={total_pages}, Página Atual={current_page}, Offset={offset}, Itens na Página={len(lista_transacoes_paginada)}")
+        # --- Fim da Lógica de Busca Paginada ---
+
+        # Atribuições para dados_relatorio e dados_grafico já foram feitas acima com os totais completos.
+        
+        # --- Calcular Comparativo com Mês Anterior (igual a antes) ---
+        # O cálculo do comparativo deve usar os totais do período ATUAL COMPLETO
+        # (total_receitas_periodo_completo ou total_despesas_periodo_completo)
+        # e recalcular os totais do período ANTERIOR da mesma forma (completo).
+        dados_relatorio['comparativo_percentual'] = None
+        dados_relatorio['comparativo_valor_anterior'] = None
+        try:
+            delta_dias = (data_fim - data_inicio).days
+            data_inicio_anterior = data_inicio - relativedelta(months=1)
+            # data_fim_anterior = data_inicio_anterior + timedelta(days=delta_dias) # Esta linha pode ser problemática se o mês anterior for mais curto
+            
+            # Ajusta data_fim_anterior para ser o mesmo dia do mês ou o último dia do mês anterior, o que vier primeiro
+            try:
+                data_fim_anterior = data_inicio_anterior.replace(day=data_fim.day)
+            except ValueError: # Dia não existe no mês anterior (ex: dia 31 em fevereiro)
+                data_fim_anterior = (data_inicio_anterior + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
+
+            # Garante que data_fim_anterior não ultrapasse o final do mês anterior nem seja antes do início
+            ultimo_dia_mes_anterior_calc = (data_inicio_anterior + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
+            data_fim_anterior = min(data_fim_anterior, ultimo_dia_mes_anterior_calc)
+            data_fim_anterior = max(data_fim_anterior, data_inicio_anterior)
+
+
+            total_anterior_calculado = Decimal('0.00')
+            total_atual_comparativo = Decimal('0.00')
+
+            # Recalcular o total do período anterior para o tipo de transação selecionado
+            if tipo_transacao_filtro == 'receitas':
+                total_atual_comparativo = total_receitas_periodo_completo # Usa o total completo já calculado
+                # Calcular receitas do período anterior
+                where_rec_ant = [sql.SQL("fecha BETWEEN %s AND %s")]
+                params_rec_ant = [data_inicio_anterior, data_fim_anterior]
+                if categoria_filtro != 'todas' and categoria_filtro != 'Salário': # Salário é tratado separadamente
+                    where_rec_ant.append(sql.SQL("categoria = %s"))
+                    params_rec_ant.append(categoria_filtro)
+                elif categoria_filtro == 'Salário': # Se o filtro é apenas Salário
+                     where_rec_ant.append(sql.SQL("1 = 0")) # Não busca outras receitas
+
+                if not (categoria_filtro == 'Salário' and not where_rec_ant[0] == sql.SQL("1 = 0")): # Evita query desnecessária se for só salário
+                    query_sum_rec_ant = sql.SQL("SELECT SUM(valor) as total FROM {schema}.outras_receitas WHERE {where}").format(
+                        schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_rec_ant))
+                    cur.execute(query_sum_rec_ant, params_rec_ant)
+                    res_rec_ant = cur.fetchone()
+                    if res_rec_ant and res_rec_ant['total']:
+                        total_anterior_calculado += res_rec_ant['total']
+                
+                # Adição de salário ao período anterior - REMOVIDO
+                # if salario_config_tabela > 0 and (categoria_filtro == 'todas' or categoria_filtro == 'Salário'):
+                #     for dia1_sal_ant in list(rrule(MONTHLY, dtstart=data_inicio_anterior, until=data_fim_anterior, bymonthday=1)):
+                #         if data_inicio_anterior <= dia1_sal_ant.date() <= data_fim_anterior:
+                #             total_anterior_calculado += salario_config_tabela
+            
+            elif tipo_transacao_filtro == 'gastos_variaveis':
+                total_atual_comparativo = total_despesas_periodo_completo # Usa o total completo já calculado
+                where_gv_ant = [sql.SQL("data BETWEEN %s AND %s")]
+                params_gv_ant = [data_inicio_anterior, data_fim_anterior]
+                if categoria_filtro != 'todas':
+                    where_gv_ant.append(sql.SQL("categoria = %s"))
+                    params_gv_ant.append(categoria_filtro)
+                query_sum_gv_ant = sql.SQL("SELECT SUM(valor) as total FROM {schema}.gastos WHERE {where}").format(
+                    schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gv_ant))
+                cur.execute(query_sum_gv_ant, params_gv_ant)
+                res_gv_ant = cur.fetchone()
+                if res_gv_ant and res_gv_ant['total']:
+                    total_anterior_calculado += res_gv_ant['total']
+
+            elif tipo_transacao_filtro == 'gastos_fixos':
+                total_atual_comparativo = total_despesas_periodo_completo # Usa o total completo já calculado
+                where_gf_ant_base = [sql.SQL("activo = TRUE"), sql.SQL("fecha_inicio <= %s")]
+                params_gf_ant_base = [data_fim_anterior]
+                if categoria_filtro != 'todas':
+                    where_gf_ant_base.append(sql.SQL("categoria = %s"))
+                    params_gf_ant_base.append(categoria_filtro)
+                
+                query_gf_ant = sql.SQL("SELECT fecha_inicio, valor, recurrencia FROM {schema}.gastos_fixos WHERE {where}").format(
+                    schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gf_ant_base))
+                cur.execute(query_gf_ant, params_gf_ant_base)
+                gastos_fixos_ant = cur.fetchall()
+                for gf_ant in gastos_fixos_ant:
+                    rrule_params_ant = get_rrule_params(gf_ant['recurrencia'])
+                    if rrule_params_ant:
+                        occurrences_ant = list(rrule(dtstart=gf_ant['fecha_inicio'], until=data_fim_anterior, **rrule_params_ant))
+                        for occ_dt_ant in occurrences_ant:
+                            if data_inicio_anterior <= occ_dt_ant.date() <= data_fim_anterior:
+                                total_anterior_calculado += gf_ant['valor']
+                    elif gf_ant['recurrencia'].lower().strip() in ['unico', 'único', 'única'] and data_inicio_anterior <= gf_ant['fecha_inicio'] <= data_fim_anterior:
+                        total_anterior_calculado += gf_ant['valor']
+            
+            if total_anterior_calculado > 0: # Evita divisão por zero
+                dados_relatorio['comparativo_valor_anterior'] = total_anterior_calculado
+                variacao = total_atual_comparativo - total_anterior_calculado
+                percentual = (variacao / total_anterior_calculado) * 100
+                dados_relatorio['comparativo_percentual'] = percentual.quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
+            else: # Se o total anterior for zero
+                dados_relatorio['comparativo_valor_anterior'] = total_anterior_calculado # Será 0
+                dados_relatorio['comparativo_percentual'] = None # Ou algum indicador de que não há base para comparação
+
+        except Exception as e_comp:
+            logging.warning(f"Erro ao calcular comparativo: {e_comp}")
+            # Mantém os valores como None em caso de erro
+        
+        logging.info(f"Dados de relatório calculados para {user_schema}. Período: {data_inicio_str} a {data_fim_str}")
+
+    except psycopg2.Error as e:
+        logging.error(f"Erro DB /relatorios {user_schema}: {e}")
         dados_grafico['datasets']['receitas'] = [float(receitas_diarias.get(dia, 0)) for dia in dias_no_periodo_list]
         dados_grafico['datasets']['despesas'] = [float(despesas_diarias.get(dia, 0)) for dia in dias_no_periodo_list]
 
@@ -2698,8 +2734,14 @@ def relatorios():
                            current_page=current_page, # Página atual
                            total_pages=total_pages)   # Total de páginas
 
+
+# Importa o Blueprint de autenticação
+from auth import auth_bp
+app.register_blueprint(auth_bp)
+
 # ... (resto do app.py, incluindo if __name__ == '__main__':) ...
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     # Certifique-se de que debug=False em produção
+    # A importação de get_db_connection em auth.py agora deve funcionar
     app.run(host='0.0.0.0', port=port, debug=True)
