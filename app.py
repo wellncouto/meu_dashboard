@@ -151,7 +151,7 @@ def json_converter(obj):
 # As rotas /login, /criar-conta, /logout, /esqueci-senha foram movidas para auth.py
 @app.route('/')
 def index():
-    if 'user_assinatura_id' in session: 
+    if 'user_assinatura_id' in session:
         return redirect(url_for('dashboard')) # 'dashboard' permanece em app.py
     return redirect(url_for('auth.login')) # Atualizado para o blueprint
 
@@ -162,14 +162,14 @@ def edit_outra_receita(item_id):
     Processa a submissão do formulário de edição de uma 'Outra Receita'.
     """
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
+        flash('Sesión expirada. Por favor, inicia sesión de nuevo.', 'warning')
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('receitas') # Redireciona de volta para a lista de receitas
 
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger')
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -184,10 +184,10 @@ def edit_outra_receita(item_id):
 
     # 2. Validação dos campos obrigatórios
     required_fields_check = [descricao_form, valor_str, categoria_form, data_str]
-    required_field_names = ['descrição', 'valor', 'categoria', 'data']
+    required_field_names = ['descripción', 'valor', 'categoría', 'fecha'] # Traduzido para consistência interna, se necessário
     if not all(field is not None and field.strip() != '' for field in required_fields_check):
         missing = [name for name, field in zip(required_field_names, required_fields_check) if not field or field.strip() == '']
-        flash(f'Erro: Preencha todos os campos obrigatórios ({", ".join(missing)}).', 'danger')
+        flash(f'Error: Completa todos los campos obligatorios ({", ".join(missing)}).', 'danger') # Traduzido
         logging.warning(f"Edição de Outra Receita falhou para ID {item_id}: campos obrigatórios ausentes: {missing}.")
         return redirect(redirect_url) # Redireciona se faltar campo
 
@@ -195,9 +195,9 @@ def edit_outra_receita(item_id):
     try:
         valor_decimal = Decimal(valor_str.replace(',', '.'))
         if valor_decimal <= 0:
-            raise ValueError("O valor da receita deve ser um número positivo.")
+            raise ValueError("El valor del ingreso debe ser un número positivo.") # Traduzido
     except (InvalidOperation, ValueError) as e:
-        flash(f'Erro: Valor monetário inválido ({valor_str}). {e}', 'danger')
+        flash(f'Error: Valor monetario inválido ({valor_str}). {e}', 'danger') # Traduzido (parcialmente, pois {e} é dinâmico)
         logging.warning(f"Edição de Outra Receita falhou para ID {item_id}: valor inválido '{valor_str}'.")
         return redirect(redirect_url)
 
@@ -205,19 +205,19 @@ def edit_outra_receita(item_id):
     try:
         data_obj = datetime.strptime(data_str, '%Y-%m-%d').date()
     except ValueError:
-        flash('Erro: Formato de data inválido. Use AAAA-MM-DD.', 'danger')
+        flash('Error: Formato de fecha inválido. Usa AAAA-MM-DD.', 'danger') # Traduzido
         logging.warning(f"Edição de Outra Receita falhou para ID {item_id}: data inválida '{data_str}'.")
         return redirect(redirect_url)
 
     # 5. Conexão com o Banco de Dados
     conn = get_db_connection()
     if not conn:
-        flash('Erro: Falha ao conectar com o banco de dados.', 'danger')
+        flash('Error: Fallo al conectar con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # 6. Validação da Categoria usando a função validar_categoria
     if not validar_categoria(conn, user_schema, categoria_form, 'receita'):
-        flash(f'Erro: Categoria "{categoria_form}" inválida ou não permitida para Receita.', 'danger')
+        flash(f'Error: Categoría "{categoria_form}" inválida o no permitida para Ingreso.', 'danger') # Traduzido
         logging.warning(f"Edição de Outra Receita falhou para ID {item_id}: categoria inválida '{categoria_form}'.")
         conn.close()
         return redirect(redirect_url)
@@ -266,19 +266,19 @@ def edit_outra_receita(item_id):
 def categorias():
     """Exibe a página de gerenciamento de categorias."""
     if 'user_assinatura_id' not in session:
-        flash('Você precisa fazer login para acessar esta página.', 'warning')
+        flash('Debes iniciar sesión para acceder a esta página.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
     if not user_schema:
-        flash('Erro interno: Informações do usuário incompletas.', 'danger')
+        flash('Error interno: Información de usuario incompleta.', 'danger') # Traduzido
         session.clear(); return redirect(url_for('auth.login')) # Atualizado
 
     lista_categorias = []
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco de dados.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
     else:
         cur = None
         try:
@@ -293,10 +293,10 @@ def categorias():
             lista_categorias = cur.fetchall()
             logging.info(f"Categorias buscadas para schema {user_schema}: {len(lista_categorias)} encontradas.")
         except psycopg2.Error as e:
-            flash('Erro ao buscar categorias no banco de dados.', 'danger')
+            flash('Error al buscar categorías en la base de datos.', 'danger') # Traduzido
             logging.error(f"Erro DB ao buscar categorias (schema {user_schema}): {e}")
         except Exception as e:
-            flash('Ocorreu um erro inesperado ao buscar categorias.', 'danger')
+            flash('Ocurrió un error inesperado al buscar categorías.', 'danger') # Traduzido
             logging.error(f"Erro inesperado ao buscar categorias (schema {user_schema}): {e}", exc_info=True)
         finally:
             if cur: cur.close()
@@ -319,27 +319,27 @@ def categorias():
 def add_categoria():
     """Processa o formulário de adição de nova categoria, com limite para gastos variáveis."""
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
+        flash('Sesión expirada.', 'warning'); return redirect(url_for('auth.login')) # Traduzido (parcialmente, já estava)
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('categorias')
     if not user_schema:
-        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
+        flash('Error interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Mantido (genérico)
 
     nome_categoria = request.form.get('categoria_nome')
     tipo_categoria = request.form.get('categoria_tipo')
     # Cor removida
 
     if not nome_categoria or not tipo_categoria:
-        flash('Nome e Tipo da categoria são obrigatórios.', 'danger'); return redirect(redirect_url)
+        flash('Nombre y Tipo de la categoría son obligatorios.', 'danger'); return redirect(redirect_url) # Traduzido
 
     valid_tipos = ['receita', 'gasto_variavel', 'gasto_fixo']
     if tipo_categoria not in valid_tipos:
-        flash('Tipo de categoria inválido.', 'danger'); return redirect(redirect_url)
+        flash('Tipo de categoría inválido.', 'danger'); return redirect(redirect_url) # Traduzido
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco.', 'danger'); return redirect(redirect_url)
+        flash('Error de conexión con la base de datos.', 'danger'); return redirect(redirect_url) # Traduzido
 
     cur = None
     try:
@@ -356,8 +356,8 @@ def add_categoria():
             result = cur.fetchone()
             count_personalizadas_variaveis = result['total'] if result else 0
 
-            if count_personalizadas_variaveis >= 10:
-                flash('Limite atingido! Você só pode criar até 2 categorias personalizadas de Gasto Variável.', 'warning')
+            if count_personalizadas_variaveis >= 10: # O número 10 aqui é um limite de sistema, não para tradução direta da mensagem.
+                flash('¡Límite alcanzado! Solo puedes crear hasta 10 categorías personalizadas de Gasto Variable.', 'warning') # Ajustado para o novo limite
                 if cur: cur.close()
                 if conn: conn.close()
                 return redirect(redirect_url)
@@ -396,27 +396,27 @@ def add_categoria():
 def edit_categoria(categoria_id):
     """Processa o formulário de edição de categoria, impedindo edição de fixas."""
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
+        flash('Sesión expirada.', 'warning'); return redirect(url_for('auth.login')) # Traduzido
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('categorias')
     if not user_schema:
-        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
+        flash('Error interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Mantido
 
     nome_categoria = request.form.get('edit_categoria_nome')
     tipo_categoria = request.form.get('edit_categoria_tipo')
     # Cor removida
 
     if not nome_categoria or not tipo_categoria:
-        flash('Nome e Tipo são obrigatórios para editar.', 'danger'); return redirect(redirect_url)
+        flash('Nombre y Tipo son obligatorios para editar.', 'danger'); return redirect(redirect_url) # Traduzido
 
     valid_tipos = ['receita', 'gasto_variavel', 'gasto_fixo']
     if tipo_categoria not in valid_tipos:
-        flash('Tipo inválido.', 'danger'); return redirect(redirect_url)
+        flash('Tipo inválido.', 'danger'); return redirect(redirect_url) # Traduzido
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão.', 'danger'); return redirect(redirect_url)
+        flash('Error de conexión.', 'danger'); return redirect(redirect_url) # Traduzido
 
     cur = None
     try:
@@ -428,11 +428,11 @@ def edit_categoria(categoria_id):
         categoria_info = cur.fetchone()
 
         if not categoria_info:
-             flash('Categoria não encontrada.', 'warning')
+             flash('Categoría no encontrada.', 'warning') # Traduzido
              return redirect(redirect_url)
 
         if categoria_info['is_fixa']:
-            flash('Erro: Categorias pré-definidas não podem ser editadas.', 'danger')
+            flash('Error: Las categorías predefinidas no pueden ser editadas.', 'danger') # Traduzido
             return redirect(redirect_url)
 
         # Atualiza SEM a cor
@@ -475,16 +475,16 @@ def edit_categoria(categoria_id):
 def delete_categoria(categoria_id):
     """Processa a exclusão de uma categoria, impedindo exclusão de fixas."""
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
+        flash('Sesión expirada.', 'warning'); return redirect(url_for('auth.login')) # Traduzido
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('categorias')
     if not user_schema:
-        flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
+        flash('Error interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Mantido
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão.', 'danger'); return redirect(redirect_url)
+        flash('Error de conexión.', 'danger'); return redirect(redirect_url) # Traduzido
 
     cur = None
     try:
@@ -496,11 +496,11 @@ def delete_categoria(categoria_id):
         categoria_info = cur.fetchone()
 
         if not categoria_info:
-             flash('Categoria não encontrada.', 'warning')
+             flash('Categoría no encontrada.', 'warning') # Traduzido
              return redirect(redirect_url)
 
         if categoria_info['is_fixa']:
-            flash('Erro: Categorias pré-definidas não podem ser excluídas.', 'danger')
+            flash('Error: Las categorías predefinidas no pueden ser eliminadas.', 'danger') # Traduzido
             return redirect(redirect_url)
 
         # Verifica uso (se não for fixa)
@@ -517,7 +517,7 @@ def delete_categoria(categoria_id):
         usage = cur.fetchone()
 
         if usage and usage['total_uso'] > 0:
-            flash(f'Erro: A categoria "{categoria_nome}" está sendo usada em {usage["total_uso"]} transações e não pode ser excluída.', 'danger')
+            flash(f'Error: La categoría "{categoria_nome}" está siendo utilizada en {usage["total_uso"]} transacciones y no puede ser eliminada.', 'danger') # Traduzido
             return redirect(redirect_url)
 
         # Exclui (se não for fixa e não estiver em uso)
@@ -558,14 +558,14 @@ def delete_categoria(categoria_id):
 @app.route('/lembretes/save', methods=['POST']) # Rota unificada para salvar
 def save_lembrete():
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
+        flash('Sesión expirada. Por favor, inicia sesión de nuevo.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('lembretes') # Redireciona de volta para a lista de lembretes
 
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger') # Traduzido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -595,7 +595,7 @@ def save_lembrete():
 
     # Validação básica dos campos obrigatórios
     if not descricao or not data_str:
-        flash('Erro: Descrição e Data são obrigatórias.', 'danger')
+        flash('Error: Descripción y Fecha son obligatorias.', 'danger') # Traduzido
         logging.warning(f"Salvar lembrete falhou: Descrição ou Data ausentes. Schema: {user_schema}")
         return redirect(redirect_url)
 
@@ -603,14 +603,14 @@ def save_lembrete():
     try:
         data_obj = datetime.strptime(data_str, '%Y-%m-%d').date()
     except ValueError:
-        flash('Erro: Formato de data inválido. Use AAAA-MM-DD.', 'danger')
+        flash('Error: Formato de fecha inválido. Usa AAAA-MM-DD.', 'danger') # Traduzido
         logging.warning(f"Salvar lembrete falhou: Data inválida '{data_str}'. Schema: {user_schema}")
         return redirect(redirect_url)
 
     # Conexão com o banco
     conn = get_db_connection()
     if not conn:
-        flash('Erro: Falha ao conectar com o banco de dados.', 'danger')
+        flash('Error: Fallo al conectar con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
@@ -632,10 +632,10 @@ def save_lembrete():
             cur.execute(update_query, query_params)
             conn.commit()
             if cur.rowcount > 0:
-                flash('¡Recordatorio actualizado con éxito!', 'success')
+                flash('¡Recordatorio actualizado con éxito!', 'success') # Mantido
                 logging.info(f"Lembrete ID {lembrete_id_int} atualizado com sucesso (repetir={repetir}, tipo={tipo_rep}). Schema: {user_schema}.")
             else:
-                flash('Recordatorio no encontrado o ningún dato fue modificado.', 'warning')
+                flash('Recordatorio no encontrado o ningún dato fue modificado.', 'warning') # Mantido
                 logging.warning(f"Edição para Lembrete ID {lembrete_id_int}: rowcount foi 0.")
         else:
             # --- Modo Adição ---
@@ -650,16 +650,16 @@ def save_lembrete():
             logging.debug(f"Executando INSERT Lembrete: Query={insert_query.as_string(conn)} Params={query_params}")
             cur.execute(insert_query, query_params)
             conn.commit()
-            flash('¡Recordatorio agregado con éxito!', 'success')
+            flash('¡Recordatorio agregado con éxito!', 'success') # Mantido
             logging.info(f"Novo lembrete '{descricao}' adicionado com sucesso (repetir={repetir}, tipo={tipo_rep}). Schema: {user_schema}.")
 
     except psycopg2.Error as e:
         if conn: conn.rollback()
-        flash(f'Erro no banco de dados: {e}', 'danger')
+        flash(f'Error en la base de datos: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB (psycopg2) ao salvar Lembrete ID {lembrete_id or 'Novo'} schema {user_schema}: {e}")
     except Exception as e:
         if conn: conn.rollback()
-        flash(f'Ocorreu um erro inesperado.', 'danger')
+        flash('Ocurrió un error inesperado.', 'danger') # Traduzido
         logging.error(f"Erro inesperado (Python) ao salvar Lembrete ID {lembrete_id or 'Novo'} schema {user_schema}: {e}", exc_info=True)
     finally:
         if cur: cur.close()
@@ -677,7 +677,7 @@ def delete_outra_receita(item_id):
     """
     # 1. Verifica se o usuário está logado
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
+        flash('Sesión expirada. Por favor, inicia sesión de nuevo.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     # 2. Obtém o schema do usuário da sessão
@@ -686,7 +686,7 @@ def delete_outra_receita(item_id):
 
     # 3. Valida se o schema existe
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger') # Traduzido
         session.clear() # Limpa a sessão inválida
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -695,7 +695,7 @@ def delete_outra_receita(item_id):
     # 4. Conecta ao banco de dados
     conn = get_db_connection()
     if not conn:
-        flash('Erro: Falha ao conectar com o banco de dados.', 'danger')
+        flash('Error: Fallo al conectar con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # 5. Executa a exclusão
@@ -749,14 +749,14 @@ def delete_lembrete(item_id):
     Processa a solicitação de exclusão de um Lembrete.
     """
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
+        flash('Sesión expirada. Por favor, inicia sesión de nuevo.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     redirect_url = url_for('lembretes') # Redireciona de volta para a lista
 
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger') # Traduzido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -764,7 +764,7 @@ def delete_lembrete(item_id):
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro: Falha ao conectar com o banco de dados.', 'danger')
+        flash('Error: Fallo al conectar con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
@@ -806,7 +806,7 @@ def edit_gasto(tipo_gasto, item_id):
     """
     # Verifica se o usuário está logado
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
+        flash('Sesión expirada. Por favor, inicia sesión de nuevo.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -815,7 +815,7 @@ def edit_gasto(tipo_gasto, item_id):
 
     # Verifica se o schema do usuário existe na sessão
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger') # Traduzido
         session.clear() # Limpa a sessão inválida
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -838,7 +838,7 @@ def edit_gasto(tipo_gasto, item_id):
         }
         # Lista de campos que são obrigatórios vir do formulário
         required_fields_check = [descricao_form, valor_str, categoria_form, data_str]
-        required_field_names = ['descrição', 'valor', 'categoria', 'data']
+        required_field_names = ['descripción', 'valor', 'categoría', 'fecha'] # Traduzido
         logging.debug(f"Editando Gasto Variável ID {item_id}: Dados recebidos {request.form}")
 
     elif tipo_gasto == 'fixos':
@@ -862,12 +862,12 @@ def edit_gasto(tipo_gasto, item_id):
         }
         # Lista de campos obrigatórios (ativo não entra aqui, pois desmarcado não vem)
         required_fields_check = [descricao_form, valor_str, categoria_form, data_str, recurrencia_form]
-        required_field_names = ['descrição', 'valor', 'categoria', 'data início', 'recorrência']
+        required_field_names = ['descripción', 'valor', 'categoría', 'fecha de inicio', 'recurrencia'] # Traduzido
         logging.debug(f"Editando Gasto Fixo ID {item_id}: Dados recebidos {request.form}")
 
     else:
         # Se o tipo_gasto na URL não for 'variaveis' nem 'fixos'
-        flash('Tipo de gasto inválido.', 'danger')
+        flash('Tipo de gasto inválido.', 'danger') # Mantido (genérico) ou 'Tipo de egreso inválido.'
         logging.warning(f"Tipo de gasto inválido '{tipo_gasto}' na URL para edição do ID {item_id}.")
         return redirect(url_for('gastos')) # Redireciona para a página padrão de gastos
 
@@ -876,7 +876,7 @@ def edit_gasto(tipo_gasto, item_id):
     if not all(field is not None for field in required_fields_check):
         # Encontra quais campos estão faltando para a mensagem de erro
         missing = [name for name, field in zip(required_field_names, required_fields_check) if field is None]
-        flash(f'Erro: Preencha todos os campos obrigatórios ({", ".join(missing)}).', 'danger')
+        flash(f'Error: Completa todos los campos obligatorios ({", ".join(missing)}).', 'danger') # Traduzido
         logging.warning(f"Edição falhou para ID {item_id} ({tipo_gasto}): campos obrigatórios ausentes: {missing}.")
         # Não usar redirect aqui ainda, pois a conexão com DB não foi aberta
         # Apenas retorna para o template com a mensagem flash
@@ -890,10 +890,10 @@ def edit_gasto(tipo_gasto, item_id):
         # Tenta converter o valor para Decimal, tratando vírgula e validando se é positivo
         valor_decimal = Decimal(valor_str.replace(',', '.'))
         if valor_decimal <= 0:
-            raise ValueError("O valor do gasto deve ser um número positivo.")
+            raise ValueError("El valor del egreso debe ser un número positivo.") # Traduzido
         update_values['valor'] = valor_decimal # Armazena o valor Decimal validado
     except (InvalidOperation, ValueError) as e:
-        flash(f'Erro: Valor monetário inválido ({valor_str}). {e}', 'danger')
+        flash(f'Error: Valor monetario inválido ({valor_str}). {e}', 'danger') # Traduzido
         logging.warning(f"Edição falhou para ID {item_id} ({tipo_gasto}): valor inválido '{valor_str}'.")
         return redirect(redirect_url)
 
@@ -907,7 +907,7 @@ def edit_gasto(tipo_gasto, item_id):
         else: # tipo_gasto == 'fixos'
             update_values['fecha_inicio'] = data_obj
     except ValueError:
-        flash('Erro: Formato de data inválido. Use AAAA-MM-DD.', 'danger')
+        flash('Error: Formato de fecha inválido. Usa AAAA-MM-DD.', 'danger') # Traduzido
         logging.warning(f"Edição falhou para ID {item_id} ({tipo_gasto}): data inválida '{data_str}'.")
         return redirect(redirect_url)
 
@@ -916,7 +916,7 @@ def edit_gasto(tipo_gasto, item_id):
         valid_recurrencias = ['mensal', 'bimestral', 'trimestral', 'semestral', 'anual', 'unico']
         # Verifica se a recorrência recebida é uma das válidas
         if not recurrencia_form or recurrencia_form.lower() not in valid_recurrencias:
-             flash('Erro: Tipo de recorrência selecionada é inválida.', 'danger')
+             flash('Error: Tipo de recurrencia seleccionada es inválida.', 'danger') # Traduzido
              logging.warning(f"Edição falhou para ID {item_id} (fixo): recorrência inválida '{recurrencia_form}'.")
              return redirect(redirect_url)
         # Armazena a recorrência validada (em minúsculas)
@@ -925,7 +925,7 @@ def edit_gasto(tipo_gasto, item_id):
     # 6. Conexão com o Banco de Dados e Execução do UPDATE
     conn = get_db_connection()
     if not conn:
-        flash('Erro: Falha ao conectar com o banco de dados.', 'danger')
+        flash('Error: Fallo al conectar con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
@@ -947,7 +947,7 @@ def edit_gasto(tipo_gasto, item_id):
 
         # Se, por algum motivo, não houver cláusulas SET válidas, informa o usuário
         if not set_clauses:
-             flash('Nenhum dado válido fornecido para atualização.', 'warning')
+             flash('Ningún dato válido proporcionado para la actualización.', 'warning') # Traduzido
              logging.warning(f"Edição para ID {item_id} ({tipo_gasto}): Nenhum campo válido para incluir na query UPDATE.")
              # Não precisa redirecionar aqui, pois o finally fechará a conexão
         else:
@@ -969,22 +969,22 @@ def edit_gasto(tipo_gasto, item_id):
 
             # Verifica se alguma linha foi afetada pela atualização
             if cur.rowcount > 0:
-                flash('¡Gasto actualizado con éxito!', 'success')
+                flash('¡Egreso actualizado con éxito!', 'success') # Traduzido
                 logging.info(f"Gasto ID {item_id} (Tipo: {tipo_gasto}) atualizado com sucesso no schema {user_schema}.")
             else:
                 # Se rowcount for 0, o ID não foi encontrado ou os dados eram idênticos
-                flash('Gasto no encontrado o ningún dato fue modificado.', 'warning')
+                flash('Egreso no encontrado o ningún dato fue modificado.', 'warning') # Traduzido
                 logging.warning(f"Edição para ID {item_id} ({tipo_gasto}): rowcount foi 0 (item não encontrado ou dados idênticos).")
 
     except psycopg2.Error as e:
         # Em caso de erro do psycopg2, desfaz a transação e loga o erro
         if conn: conn.rollback()
-        flash(f'Error: {e}', 'danger')
+        flash(f'Error en base de datos: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB (psycopg2) ao editar gasto {tipo_gasto} ID {item_id} schema {user_schema}: {e}")
     except Exception as e:
         # Em caso de outro erro Python, desfaz a transação e loga
         if conn: conn.rollback()
-        flash(f'Error', 'danger')
+        flash('Ocurrió un error inesperado.', 'danger') # Traduzido
         logging.error(f"Erro inesperado (Python) ao editar gasto {tipo_gasto} ID {item_id} schema {user_schema}: {e}", exc_info=True)
     finally:
         # Garante que o cursor e a conexão sejam fechados
@@ -1002,7 +1002,7 @@ def delete_gasto(tipo_gasto, item_id):
     """
     # Verifica se o usuário está logado
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada. Por favor, faça login novamente.', 'warning')
+        flash('Sesión expirada. Por favor, inicia sesión de nuevo.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -1011,7 +1011,7 @@ def delete_gasto(tipo_gasto, item_id):
 
     # Verifica o schema
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger') # Traduzido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -1024,14 +1024,14 @@ def delete_gasto(tipo_gasto, item_id):
         table_name = sql.Identifier('gastos_fixos')
     else:
         # Se o tipo_gasto na URL for inválido
-        flash('Tipo de gasto inválido.', 'danger')
+        flash('Tipo de egreso inválido.', 'danger') # Traduzido
         logging.warning(f"Tipo de gasto inválido '{tipo_gasto}' na URL para exclusão do ID {item_id}.")
         return redirect(url_for('gastos')) # Vai para a página padrão
 
     # 2. Conecta ao banco e executa o DELETE
     conn = get_db_connection()
     if not conn:
-        flash('Erro: Falha ao conectar com o banco de dados.', 'danger')
+        flash('Error: Fallo al conectar con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
@@ -1050,22 +1050,22 @@ def delete_gasto(tipo_gasto, item_id):
 
         # Verifica se a exclusão realmente afetou alguma linha
         if cur.rowcount > 0:
-            flash('¡Gasto eliminado con éxito!', 'success')
+            flash('¡Egreso eliminado con éxito!', 'success') # Traduzido
             logging.info(f"Gasto ID {item_id} (Tipo: {tipo_gasto}) excluído com sucesso do schema {user_schema}.")
         else:
             # Se rowcount for 0, o ID não existia na tabela
-            flash('Gasto no encontrado. Es posible que ya haya sido eliminado anteriormente.', 'warning')
+            flash('Egreso no encontrado. Es posible que ya haya sido eliminado anteriormente.', 'warning') # Traduzido
             logging.warning(f"Exclusão para ID {item_id} ({tipo_gasto}): rowcount foi 0 (item não encontrado).")
 
     except psycopg2.Error as e:
         # Em caso de erro do banco, desfaz a transação e loga
         if conn: conn.rollback()
-        flash(f'Error {e}', 'danger')
+        flash(f'Error en base de datos: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB (psycopg2) ao excluir gasto {tipo_gasto} ID {item_id} schema {user_schema}: {e}")
     except Exception as e:
         # Em caso de outro erro, desfaz a transação e loga
         if conn: conn.rollback()
-        flash(f'Error', 'danger')
+        flash('Ocurrió un error inesperado.', 'danger') # Traduzido
         logging.error(f"Erro inesperado (Python) ao excluir gasto {tipo_gasto} ID {item_id} schema {user_schema}: {e}", exc_info=True)
     finally:
         # Garante o fechamento da conexão e cursor
@@ -1082,7 +1082,7 @@ ITEMS_PER_PAGE = 30
 @app.route('/dashboard')
 def dashboard():
     if 'user_assinatura_id' not in session:
-        flash('Você precisa fazer login para acessar esta página.', 'warning')
+        flash('Debes iniciar sesión para acceder a esta página.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -1090,7 +1090,7 @@ def dashboard():
 
     if not user_schema:
         logging.error(f"Schema não encontrado na sessão para usuário {user_nome} (ID: {session.get('user_assinatura_id')}) ao acessar /dashboard. Deslogando.")
-        flash('Erro interno: Informações do usuário incompletas. Por favor, faça login novamente.', 'danger')
+        flash('Error interno: Información de usuario incompleta. Por favor, inicia sesión de nuevo.', 'danger') # Traduzido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -1132,7 +1132,7 @@ def dashboard():
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco ao carregar dashboard.', 'danger')
+        flash('Error de conexión con la base de datos al cargar el panel.', 'danger') # Traduzido
         dados_json_string = json.dumps({
             "gastos_categoria_labels": [], "gastos_categoria_data": [],
             "gastos_tempo_labels": [], "gastos_tempo_data": []
@@ -1293,11 +1293,11 @@ def dashboard():
 
     except psycopg2.Error as e:
         logging.error(f"Erro DB ao carregar dashboard para schema {user_schema}, período {periodo_selecionado}: {e}")
-        flash('Erro ao buscar dados para o dashboard.', 'danger')
+        flash('Error al buscar datos para el panel.', 'danger') # Traduzido
         meta_ativa = None
     except Exception as e:
         logging.error(f"Erro inesperado ao carregar dashboard para schema {user_schema}, período {periodo_selecionado}: {e}", exc_info=True)
-        flash('Ocorreu um erro inesperado ao carregar o dashboard.', 'danger')
+        flash('Ocurrió un error inesperado al cargar el panel.', 'danger') # Traduzido
         meta_ativa = None
     finally:
         if cur: cur.close()
@@ -1329,13 +1329,13 @@ def dashboard():
 @app.route('/gastos', methods=['GET'])
 def gastos():
     if 'user_assinatura_id' not in session:
-        flash('Inicio de sesión necesario.', 'warning')
+        flash('Inicio de sesión necesario.', 'warning') # Mantido (já em espanhol)
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
     if not user_schema:
-        flash('Erro interno.', 'danger')
+        flash('Error interno.', 'danger') # Mantido (genérico)
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -1359,7 +1359,7 @@ def gastos():
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro conexão DB.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         # Retorna template com valores vazios/padrão em caso de erro de conexão
         return render_template('gastos.html', user_nome=user_nome, itens=lista_itens,
                                categorias_disponiveis=categorias_disponiveis,
@@ -1402,7 +1402,7 @@ def gastos():
                 where_clauses.append(sql.SQL("{date_col} >= %s").format(date_col=date_column_filter))
                 query_params.append(data_inicio_str)
             except ValueError:
-                flash('Data início inválida.', 'warning')
+                flash('Fecha de inicio inválida.', 'warning') # Traduzido
                 data_inicio_str = None # Invalida para filtros_aplicados
 
         # Adiciona filtro de data_fim
@@ -1412,7 +1412,7 @@ def gastos():
                 where_clauses.append(sql.SQL("{date_col} <= %s").format(date_col=date_column_filter))
                 query_params.append(data_fim_str)
             except ValueError:
-                flash('Data fim inválida.', 'warning')
+                flash('Fecha de fin inválida.', 'warning') # Traduzido
                 data_fim_str = None # Invalida para filtros_aplicados
 
         # Adiciona filtro de categoria
@@ -1486,7 +1486,7 @@ def gastos():
         logging.info(f"Buscados {len(lista_itens)} itens ({tipo_gasto_ativo}) para página {current_page}/{total_pages} (Total: {total_items})")
 
     except psycopg2.Error as e:
-        flash(f'Erro DB ao buscar gastos ({tipo_gasto_ativo}).', 'danger')
+        flash(f'Error en BD al buscar egresos ({tipo_gasto_ativo}).', 'danger') # Traduzido
         logging.error(f"Erro DB /gastos {user_schema}, Tipo: {tipo_gasto_ativo}, Página: {page}: {e}")
         # Resetar valores para evitar erros no template
         lista_itens = []
@@ -1494,7 +1494,7 @@ def gastos():
         total_pages = 1
         current_page = 1
     except Exception as e:
-        flash(f'Erro inesperado ao buscar gastos ({tipo_gasto_ativo}).', 'danger')
+        flash(f'Error inesperado al buscar egresos ({tipo_gasto_ativo}).', 'danger') # Traduzido
         logging.error(f"Erro inesperado /gastos {user_schema}, Tipo: {tipo_gasto_ativo}, Página: {page}: {e}", exc_info=True)
         lista_itens = []
         total_items = 0
@@ -1528,7 +1528,7 @@ def gastos():
 def add_gasto():
     # Verifica sessão
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning')
+        flash('Sesión expirada.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -1537,7 +1537,7 @@ def add_gasto():
 
     # Verifica schema
     if not user_schema:
-        flash('Erro interno.', 'danger')
+        flash('Error interno.', 'danger') # Mantido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -1549,36 +1549,36 @@ def add_gasto():
 
     # Validação básica dos campos
     if not all([descricao_form, valor_str, categoria, data_gasto_str]):
-        flash('Campos obrigatórios: Descrição, Valor, Categoria e Data.', 'danger')
+        flash('Campos obligatorios: Descripción, Valor, Categoría y Fecha.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Validação do valor
     try:
         valor_decimal = Decimal(valor_str.replace(',', '.'))
         if valor_decimal <= 0:
-             raise ValueError("O valor do gasto deve ser positivo.")
+             raise ValueError("El valor del egreso debe ser positivo.") # Traduzido
     except (InvalidOperation, ValueError) as e:
-        flash(f'Valor inválido: {e}', 'danger')
+        flash(f'Valor inválido: {e}', 'danger') # Mantido (e é dinâmico)
         return redirect(redirect_url)
 
     # Validação da data
     try:
         data_gasto_obj = datetime.strptime(data_gasto_str, '%Y-%m-%d').date()
     except ValueError:
-        flash('Data inválida. Use o formato AAAA-MM-DD.', 'danger')
+        flash('Fecha inválida. Usa el formato AAAA-MM-DD.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Conexão com o banco
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco de dados.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
     try:
         # *** Validação da Categoria ***
         if not validar_categoria(conn, user_schema, categoria, 'gasto_variavel'):
-            flash(f'Erro: Categoria "{categoria}" inválida ou não permitida para Gasto Variável.', 'danger')
+            flash(f'Error: Categoría "{categoria}" inválida o no permitida para Egreso Variable.', 'danger') # Traduzido
             logging.warning(f"Tentativa de adicionar gasto variável com categoria inválida '{categoria}' no schema {user_schema}")
             # Não precisa fechar conn/cur aqui, o finally cuida disso
             return redirect(redirect_url)
@@ -1590,16 +1590,16 @@ def add_gasto():
         )
         cur.execute(insert_query, (descricao_form, valor_decimal, categoria, data_gasto_obj))
         conn.commit()
-        flash('¡Gasto variable agregado con éxito!', 'success')
+        flash('¡Egreso variable agregado con éxito!', 'success') # Traduzido
         logging.info(f"Gasto variável '{descricao_form}' adicionado para schema {user_schema}")
 
     except psycopg2.Error as e:
         if conn: conn.rollback()
-        flash(f'Erro no banco de dados ao adicionar gasto: {e}', 'danger')
+        flash(f'Error en la base de datos al agregar el egreso: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB add gasto var {user_schema}: {e}")
     except Exception as e:
         if conn: conn.rollback()
-        flash(f'Erro inesperado ao adicionar gasto: {e}', 'danger')
+        flash(f'Error inesperado al agregar el egreso: {e}', 'danger') # Traduzido
         logging.error(f"Erro inesperado add gasto var {user_schema}: {e}", exc_info=True)
     finally:
         # Garante que cursor e conexão sejam fechados
@@ -1612,7 +1612,7 @@ def add_gasto():
 def add_gasto_fixo():
     # Verifica sessão
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning')
+        flash('Sesión expirada.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -1621,7 +1621,7 @@ def add_gasto_fixo():
 
     # Verifica schema
     if not user_schema:
-        flash('Erro interno.', 'danger')
+        flash('Error interno.', 'danger') # Mantido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -1635,43 +1635,43 @@ def add_gasto_fixo():
 
     # Validação básica dos campos
     if not all([descricao, valor_str, categoria, fecha_inicio_str, recurrencia]):
-        flash('Campos obrigatórios: Descrição, Valor, Categoria, Data Início e Recorrência.', 'danger')
+        flash('Campos obligatorios: Descripción, Valor, Categoría, Fecha de Inicio y Recurrencia.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Validação do valor
     try:
         valor_decimal = Decimal(valor_str.replace(',', '.'))
         if valor_decimal <= 0:
-            raise ValueError("O valor do gasto fixo deve ser positivo.")
+            raise ValueError("El valor del egreso fijo debe ser positivo.") # Traduzido
     except (InvalidOperation, ValueError) as e:
-        flash(f'Valor inválido: {e}', 'danger')
+        flash(f'Valor inválido: {e}', 'danger') # Mantido
         return redirect(redirect_url)
 
     # Validação da data
     try:
         fecha_inicio_obj = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
     except ValueError:
-        flash('Data de início inválida. Use o formato AAAA-MM-DD.', 'danger')
+        flash('Fecha de inicio inválida. Usa el formato AAAA-MM-DD.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Validação da recorrência
     valid_recurrencias = ['mensal', 'bimestral', 'trimestral', 'semestral', 'anual', 'unico']
     if not recurrencia or recurrencia.lower() not in valid_recurrencias:
-        flash('Tipo de recorrência inválido.', 'danger')
+        flash('Tipo de recurrencia inválido.', 'danger') # Traduzido
         return redirect(redirect_url)
     recurrencia_lower = recurrencia.lower() # Garante minúsculas para salvar
 
     # Conexão com o banco
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco de dados.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
     try:
         # *** Validação da Categoria ***
         if not validar_categoria(conn, user_schema, categoria, 'gasto_fixo'):
-            flash(f'Erro: Categoria "{categoria}" inválida ou não permitida para Gasto Fixo.', 'danger')
+            flash(f'Error: Categoría "{categoria}" inválida o no permitida para Egreso Fijo.', 'danger') # Traduzido
             logging.warning(f"Tentativa de adicionar gasto fixo com categoria inválida '{categoria}' no schema {user_schema}")
             return redirect(redirect_url)
 
@@ -1684,16 +1684,16 @@ def add_gasto_fixo():
         """).format(schema=sql.Identifier(user_schema))
         cur.execute(insert_query, (descricao, valor_decimal, categoria, fecha_inicio_obj, recurrencia_lower, activo))
         conn.commit()
-        flash('¡Gasto fijo agregado con éxito!', 'success')
+        flash('¡Egreso fijo agregado con éxito!', 'success') # Traduzido
         logging.info(f"Gasto fixo '{descricao}' adicionado para schema {user_schema}")
 
     except psycopg2.Error as e:
         if conn: conn.rollback()
-        flash(f'Error: {e}', 'danger')
+        flash(f'Error en base de datos: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB add gasto fixo {user_schema}: {e}")
     except Exception as e:
         if conn: conn.rollback()
-        flash(f'Error: {e}', 'danger')
+        flash(f'Error inesperado: {e}', 'danger') # Traduzido
         logging.error(f"Erro inesperado add gasto fixo {user_schema}: {e}", exc_info=True)
     finally:
         if cur: cur.close()
@@ -1705,19 +1705,19 @@ def add_gasto_fixo():
 # --- Rotas de Lembretes ---
 @app.route('/lembretes')
 def lembretes():
-    if 'user_assinatura_id' not in session: flash('Login necessário.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
+    if 'user_assinatura_id' not in session: flash('Inicio de sesión necesario.', 'warning'); return redirect(url_for('auth.login')) # Traduzido
     user_schema = session.get('user_schema'); user_nome = session.get('user_nome', session.get('user_email'))
-    if not user_schema: flash('Erro interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Atualizado
+    if not user_schema: flash('Error interno.', 'danger'); session.clear(); return redirect(url_for('auth.login')) # Mantido
     lista_de_lembretes = []
     conn = get_db_connection()
     if conn:
         cur = None
         try: cur = conn.cursor(cursor_factory=DictCursor); query = sql.SQL("SELECT id, descripcion, data, repetir, tipo_repeticion FROM {}.lembretes ORDER BY data ASC, id ASC").format(sql.Identifier(user_schema)); cur.execute(query); lista_de_lembretes = cur.fetchall()
-        except psycopg2.Error as e: flash('Erro DB lembretes.', 'danger'); logging.error(f"Erro DB /lembretes {user_schema}: {e}"); lista_de_lembretes = []
+        except psycopg2.Error as e: flash('Error en BD al cargar recordatorios.', 'danger'); logging.error(f"Erro DB /lembretes {user_schema}: {e}"); lista_de_lembretes = [] # Traduzido
         finally:
             if cur: cur.close()
             if conn: conn.close()
-    else: flash('Erro conexão DB.', 'danger'); lista_de_lembretes = []
+    else: flash('Error de conexión con la base de datos.', 'danger'); lista_de_lembretes = [] # Traduzido
     data_hoje = date.today()
     return render_template('lembretes.html', user_nome=user_nome, lembretes=lista_de_lembretes, data_hoje=data_hoje)
 
@@ -1725,7 +1725,7 @@ def lembretes():
 def add_lembrete_from_modal():
     # 1. Verifica sessão
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning')
+        flash('Sesión expirada.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     # 2. Obtém schema e URL de redirecionamento
@@ -1735,7 +1735,7 @@ def add_lembrete_from_modal():
     redirect_url = url_for('lembretes') if referer_url and '/lembretes' in referer_url else url_for('dashboard')
 
     if not user_schema:
-        flash('Erro interno.', 'danger')
+        flash('Error interno.', 'danger') # Mantido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -1745,14 +1745,14 @@ def add_lembrete_from_modal():
 
     # Validação básica
     if not descricao or not data_lembrete_str:
-        flash('Descrição e data obrigatórias.', 'danger')
+        flash('Descripción y fecha son obligatorias.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Validação da data
     try:
         data_lembrete_obj = datetime.strptime(data_lembrete_str, '%Y-%m-%d').date()
     except ValueError:
-        flash('Data inválida. Use AAAA-MM-DD.', 'danger')
+        flash('Fecha inválida. Usa AAAA-MM-DD.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # --- 4. Tratamento da Repetição (Correção Principal) ---
@@ -1778,7 +1778,7 @@ def add_lembrete_from_modal():
     # --- 5. Conexão e Inserção no Banco ---
     conn = get_db_connection()
     if not conn:
-        flash('Erro conexão DB.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
@@ -1795,17 +1795,17 @@ def add_lembrete_from_modal():
         logging.debug(f"Executando INSERT Lembrete (Modal): Query={query.as_string(conn)} Params={params}")
         cur.execute(query, params)
         conn.commit()
-        flash('Lembrete adicionado!', 'success')
+        flash('¡Recordatorio agregado!', 'success') # Traduzido
         logging.info(f"Lembrete '{descricao}' adicionado via modal (repetir={repetir}, tipo={tipo_rep}). Schema: {user_schema}")
 
     except psycopg2.Error as e:
         if conn: conn.rollback()
         logging.error(f"Erro DB add lembrete (modal) {user_schema}: {e}")
-        flash(f'Erro DB: {e}', 'danger')
+        flash(f'Error en BD: {e}', 'danger') # Traduzido
     except Exception as e:
         if conn: conn.rollback()
         logging.error(f"Erro inesperado add lembrete (modal) {user_schema}: {e}", exc_info=True)
-        flash('Erro inesperado.', 'danger')
+        flash('Error inesperado.', 'danger') # Traduzido
     finally:
         if cur: cur.close()
         if conn: conn.close()
@@ -1820,7 +1820,7 @@ def add_lembrete_from_modal():
 def receitas():
     # Verifica login
     if 'user_assinatura_id' not in session:
-        flash('Você precisa fazer login para acessar esta página.', 'warning')
+        flash('Debes iniciar sesión para acceder a esta página.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -1828,13 +1828,13 @@ def receitas():
 
     # Verifica schema
     if not user_schema:
-        flash('Erro interno: Informações do usuário incompletas.', 'danger')
+        flash('Error interno: Información de usuario incompleta.', 'danger') # Traduzido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco de dados.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         # Valores padrão em caso de falha de conexão
         return render_template('receitas.html', user_nome=user_nome,
                                # salario_principal=Decimal('0.00'), # REMOVIDO
@@ -1868,12 +1868,12 @@ def receitas():
         data_inicio_obj = None; data_fim_obj = None
         if data_inicio_str:
             try: data_inicio_obj = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
-            except ValueError: flash('Data início inválida.', 'warning'); data_inicio_str = None
+            except ValueError: flash('Fecha de inicio inválida.', 'warning'); data_inicio_str = None # Traduzido
         if data_fim_str:
             try: data_fim_obj = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
-            except ValueError: flash('Data fim inválida.', 'warning'); data_fim_str = None
+            except ValueError: flash('Fecha de fin inválida.', 'warning'); data_fim_str = None # Traduzido
         if data_inicio_obj and data_fim_obj and data_fim_obj < data_inicio_obj:
-            flash('Data fim anterior a início.', 'warning'); data_inicio_obj = None; data_fim_obj = None; data_inicio_str = None; data_fim_str = None
+            flash('La fecha de fin no puede ser anterior a la fecha de inicio.', 'warning'); data_inicio_obj = None; data_fim_obj = None; data_inicio_str = None; data_fim_str = None # Traduzido
 
         filtros_aplicados = {
             'data_inicio': data_inicio_str,
@@ -1958,7 +1958,7 @@ def receitas():
                                total_pages=total_pages)
 
     except psycopg2.Error as e:
-        flash('Erro de banco de dados na página de receitas.', 'danger')
+        flash('Error en la base de datos en la página de ingresos.', 'danger') # Traduzido
         logging.error(f"Erro DB /receitas {user_schema}: {e}")
         return render_template('receitas.html', user_nome=user_nome, # salario_principal=Decimal('0.00'), # REMOVIDO
                                outras_receitas=[], total_outras_receitas_mes=Decimal('0.00'),
@@ -1966,7 +1966,7 @@ def receitas():
                                categorias_receitas_formulario=[], filtros_aplicados={},
                                current_page=1, total_pages=1)
     except Exception as e:
-        flash('Erro inesperado na página de receitas.', 'danger')
+        flash('Error inesperado en la página de ingresos.', 'danger') # Traduzido
         logging.error(f"Erro inesperado /receitas {user_schema}: {e}", exc_info=True)
         return render_template('receitas.html', user_nome=user_nome, # salario_principal=Decimal('0.00'), # REMOVIDO
                                outras_receitas=[], total_outras_receitas_mes=Decimal('0.00'),
@@ -1985,7 +1985,7 @@ def receitas():
 def add_outra_receita():
     # Verifica sessão
     if 'user_assinatura_id' not in session:
-        flash('Sessão expirada.', 'warning')
+        flash('Sesión expirada.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
@@ -1994,7 +1994,7 @@ def add_outra_receita():
 
     # Verifica schema
     if not user_schema:
-        flash('Erro interno.', 'danger')
+        flash('Error interno.', 'danger') # Mantido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -2006,36 +2006,36 @@ def add_outra_receita():
 
     # Validação básica dos campos
     if not all([data_receita_str, categoria_receita, descricao_receita, valor_receita_str]):
-        flash('Campos obrigatórios: Data, Categoria, Descrição e Valor.', 'danger')
+        flash('Campos obligatorios: Fecha, Categoría, Descripción y Valor.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Validação do valor
     try:
         valor_receita_decimal = Decimal(valor_receita_str.replace(',', '.'))
         if valor_receita_decimal <= 0:
-            raise ValueError("O valor da receita deve ser positivo.")
+            raise ValueError("El valor del ingreso debe ser positivo.") # Traduzido
     except (InvalidOperation, ValueError) as e:
-        flash(f'Valor inválido: {e}', 'danger')
+        flash(f'Valor inválido: {e}', 'danger') # Mantido
         return redirect(redirect_url)
 
     # Validação da data
     try:
         data_receita_obj = datetime.strptime(data_receita_str, '%Y-%m-%d').date()
     except ValueError:
-        flash('Data inválida. Use o formato AAAA-MM-DD.', 'danger')
+        flash('Fecha inválida. Usa el formato AAAA-MM-DD.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     # Conexão com o banco
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco de dados.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
     try:
         # *** Validação da Categoria ***
         if not validar_categoria(conn, user_schema, categoria_receita, 'receita'):
-            flash(f'Erro: Categoria "{categoria_receita}" inválida ou não permitida para Receita.', 'danger')
+            flash(f'Error: Categoría "{categoria_receita}" inválida o no permitida para Ingreso.', 'danger') # Traduzido
             logging.warning(f"Tentativa de adicionar outra receita com categoria inválida '{categoria_receita}' no schema {user_schema}")
             return redirect(redirect_url)
 
@@ -2048,16 +2048,16 @@ def add_outra_receita():
         """).format(schema=sql.Identifier(user_schema))
         cur.execute(insert_query, (data_receita_obj, categoria_receita, descricao_receita, valor_receita_decimal))
         conn.commit()
-        flash('¡Ingreso agregado con éxito!', 'success')
+        flash('¡Ingreso agregado con éxito!', 'success') # Mantido
         logging.info(f"Outra receita '{descricao_receita}' adicionada para schema {user_schema}")
 
     except psycopg2.Error as e:
         if conn: conn.rollback()
-        flash(f'Error {e}', 'danger')
+        flash(f'Error en base de datos: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB add outra receita {user_schema}: {e}")
     except Exception as e:
         if conn: conn.rollback()
-        flash(f'Error: {e}', 'danger')
+        flash(f'Error inesperado: {e}', 'danger') # Traduzido
         logging.error(f"Erro inesperado add outra receita {user_schema}: {e}", exc_info=True)
     finally:
         if cur: cur.close()
@@ -2070,17 +2070,17 @@ def add_outra_receita():
 @app.route('/metas', methods=['POST'])
 def metas():
     if 'user_assinatura_id' not in session:
-        flash('Você precisa fazer login.', 'warning')
+        flash('Debes iniciar sesión.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     if not user_schema:
-        flash('Erro interno: Schema do usuário não encontrado.', 'danger')
+        flash('Error interno: Esquema de usuario no encontrado.', 'danger') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco de dados.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return redirect(url_for('dashboard'))
 
     cur = None
@@ -2092,15 +2092,15 @@ def metas():
 
         # CORREÇÃO APLICADA: Separar validação
         if not all([descricao, categoria, prazo_form_value, valor_alvo_str]):
-            flash('Erro: Descrição, Categoria, Prazo e Valor Alvo da meta são obrigatórios.', 'danger')
+            flash('Error: Descripción, Categoría, Plazo y Valor Objetivo de la meta son obligatorios.', 'danger') # Traduzido
             return redirect(url_for('dashboard'))
 
         try:
             valor_alvo = Decimal(valor_alvo_str.replace(',', '.'))
             if valor_alvo <= 0:
-                raise ValueError("O valor alvo da meta deve ser um número positivo.")
+                raise ValueError("El valor objetivo de la meta debe ser un número positivo.") # Traduzido
         except (InvalidOperation, ValueError) as e:
-            flash(f'Erro: Valor alvo inválido. {e}', 'danger')
+            flash(f'Error: Valor objetivo inválido. {e}', 'danger') # Traduzido
             return redirect(url_for('dashboard'))
 
         prazo_meses = None
@@ -2108,18 +2108,18 @@ def metas():
             try:
                 prazo_meses = int(prazo_form_value)
                 if prazo_meses <= 0:
-                     flash('Erro: O prazo em meses, se informado, deve ser um número positivo.', 'danger')
+                     flash('Error: El plazo en meses, si se informa, debe ser un número positivo.', 'danger') # Traduzido
                      return redirect(url_for('dashboard'))
             except ValueError:
-                 flash('Erro: Prazo em meses inválido.', 'danger')
+                 flash('Error: Plazo en meses inválido.', 'danger') # Traduzido
                  return redirect(url_for('dashboard'))
         elif prazo_form_value != 'indefinido':
-            flash('Erro: Valor de prazo inválido.', 'danger')
+            flash('Error: Valor de plazo inválido.', 'danger') # Traduzido
             return redirect(url_for('dashboard'))
 
-        valid_categorias = ['Viagem', 'Compra', 'Guardar dinheiro', 'Outros']
+        valid_categorias = ['Viagem', 'Compra', 'Guardar dinheiro', 'Outros'] # Manter, são valores fixos no form
         if categoria not in valid_categorias:
-            flash('Erro: Categoria de meta inválida.', 'danger')
+            flash('Error: Categoría de meta inválida.', 'danger') # Traduzido
             return redirect(url_for('dashboard'))
 
         valor_mensal_sugerido = None; data_conclusao_prevista = None; data_inicio = date.today()
@@ -2136,15 +2136,15 @@ def metas():
         if meta_existente_ativa:
             update_query = sql.SQL("UPDATE {schema}.metas SET descricao = %s, categoria = %s, prazo_meses = %s, valor_alvo = %s, valor_mensal_sugerido = %s, data_inicio = %s, data_conclusao_prevista = %s, valor_atual = valor_atual, status = 'ativa', atualizado_em = NOW() WHERE id = %s").format(schema=sql.Identifier(user_schema))
             cur.execute(update_query, (descricao, categoria, prazo_meses, valor_alvo, valor_mensal_sugerido, data_inicio, data_conclusao_prevista, meta_existente_ativa['id']))
-            flash('Meta atualizada!', 'success')
+            flash('¡Meta actualizada!', 'success') # Traduzido
         else:
             insert_query = sql.SQL("INSERT INTO {schema}.metas (descricao, categoria, prazo_meses, valor_alvo, valor_mensal_sugerido, data_inicio, data_conclusao_prevista, valor_atual, status) VALUES (%s, %s, %s, %s, %s, %s, %s, 0, 'ativa')").format(schema=sql.Identifier(user_schema))
             cur.execute(insert_query, (descricao, categoria, prazo_meses, valor_alvo, valor_mensal_sugerido, data_inicio, data_conclusao_prevista))
-            flash('Nova meta definida!', 'success')
+            flash('¡Nueva meta definida!', 'success') # Traduzido
         conn.commit()
 
-    except psycopg2.Error as e: conn.rollback(); flash(f'Erro DB meta: {e}', 'danger'); logging.error(f"Erro DB salvar meta {user_schema}: {e}")
-    except Exception as e: conn.rollback(); flash(f'Erro inesperado meta: {e}', 'danger'); logging.error(f"Erro inesperado salvar meta {user_schema}: {e}")
+    except psycopg2.Error as e: conn.rollback(); flash(f'Error en BD al guardar meta: {e}', 'danger'); logging.error(f"Erro DB salvar meta {user_schema}: {e}") # Traduzido
+    except Exception as e: conn.rollback(); flash(f'Error inesperado al guardar meta: {e}', 'danger'); logging.error(f"Erro inesperado salvar meta {user_schema}: {e}") # Traduzido
     finally:
         if cur: cur.close()
         if conn: conn.close()
@@ -2155,9 +2155,9 @@ def metas():
 def cancelar_meta():
     if 'user_assinatura_id' not in session: flash('Sessão expirada.', 'warning'); return redirect(url_for('auth.login')) # Atualizado
     user_schema = session.get('user_schema'); redirect_url = url_for('dashboard')
-    if not user_schema: flash('Erro interno.', 'danger'); return redirect(url_for('auth.login')) # Atualizado
+    if not user_schema: flash('Error interno.', 'danger'); return redirect(url_for('auth.login')) # Mantido
     conn = get_db_connection();
-    if not conn: flash('Erro conexão DB.', 'danger'); return redirect(redirect_url)
+    if not conn: flash('Error de conexión con la base de datos.', 'danger'); return redirect(redirect_url) # Traduzido
     cur = None
     try:
         cur = conn.cursor()
@@ -2165,11 +2165,11 @@ def cancelar_meta():
         cur.execute(update_query); conn.commit()
         # CORREÇÃO: Mover if para dentro do try
         if cur.rowcount > 0:
-            flash('Meta cancelada.', 'success')
+            flash('Meta cancelada.', 'success') # Traduzido
         else:
-            flash('Nenhuma meta ativa encontrada.', 'info')
-    except psycopg2.Error as e: conn.rollback(); flash(f'Erro DB: {e}', 'danger'); logging.error(f"Erro DB cancelar meta {user_schema}: {e}")
-    except Exception as e: conn.rollback(); flash(f'Erro inesperado: {e}', 'danger'); logging.error(f"Erro inesperado cancelar meta {user_schema}: {e}")
+            flash('No se encontró ninguna meta activa.', 'info') # Traduzido
+    except psycopg2.Error as e: conn.rollback(); flash(f'Error en BD: {e}', 'danger'); logging.error(f"Erro DB cancelar meta {user_schema}: {e}") # Traduzido
+    except Exception as e: conn.rollback(); flash(f'Error inesperado: {e}', 'danger'); logging.error(f"Erro inesperado cancelar meta {user_schema}: {e}") # Traduzido
     finally:
         if cur: cur.close()
         if conn: conn.close()
@@ -2184,26 +2184,26 @@ def add_progresso_meta():
     user_schema = session.get('user_schema')
     redirect_url = url_for('dashboard') # Sempre redireciona para dashboard nesta ação
     if not user_schema:
-        flash('Erro interno.', 'danger')
+        flash('Error interno.', 'danger') # Mantido
         return redirect(url_for('auth.login')) # Atualizado
 
     valor_adicionado_str = request.form.get('valor_progresso')
 
     if not valor_adicionado_str:
-        flash('Erro: Informe o valor a ser adicionado ao progresso da meta.', 'danger')
+        flash('Error: Informa el valor a agregar al progreso de la meta.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     try:
         valor_adicionado = Decimal(valor_adicionado_str.replace(',', '.'))
         if valor_adicionado <= 0:
-            raise ValueError("O valor adicionado à meta deve ser positivo.")
+            raise ValueError("El valor agregado a la meta debe ser positivo.") # Traduzido
     except (InvalidOperation, ValueError) as e:
-        flash(f'Erro: Valor de progresso inválido. {e}', 'danger')
+        flash(f'Error: Valor de progreso inválido. {e}', 'danger') # Traduzido
         return redirect(redirect_url)
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return redirect(redirect_url)
 
     cur = None
@@ -2215,7 +2215,7 @@ def add_progresso_meta():
 
         # CORREÇÃO APLICADA AQUI:
         if not meta:
-            flash('Nenhuma meta ativa encontrada para adicionar progresso.', 'warning')
+            flash('No se encontró ninguna meta activa para agregar progreso.', 'warning') # Traduzido
             # Não feche a conexão aqui, o finally cuidará disso
             return redirect(redirect_url)
 
@@ -2224,9 +2224,9 @@ def add_progresso_meta():
         if novo_valor_atual >= meta['valor_alvo']:
             novo_valor_atual = meta['valor_alvo'] # Limita ao valor alvo
             status_meta_final = 'concluida'
-            flash(f'Parabéns! Meta de {format_currency_filter(meta["valor_alvo"])} concluída!', 'success')
+            flash(f'¡Felicidades! Meta de {format_currency_filter(meta["valor_alvo"])} completada!', 'success') # Traduzido
         else:
-            flash(f'Progresso de {format_currency_filter(valor_adicionado)} adicionado à meta!', 'success')
+            flash(f'¡Progreso de {format_currency_filter(valor_adicionado)} agregado a la meta!', 'success') # Traduzido
 
         update_query = sql.SQL("""
             UPDATE {schema}.metas
@@ -2238,15 +2238,15 @@ def add_progresso_meta():
 
         # Verificar se a atualização realmente ocorreu (caso a meta tenha sido alterada entre o SELECT e o UPDATE)
         if cur.rowcount == 0 and status_meta_final == 'ativa':
-             flash('Não foi possível adicionar progresso. A meta pode ter sido alterada ou cancelada.', 'warning')
+             flash('No fue posible agregar el progreso. La meta puede haber sido alterada o cancelada.', 'warning') # Traduzido
 
     except psycopg2.Error as e:
         if conn: conn.rollback()
-        flash(f'Erro ao adicionar progresso: {e}', 'danger')
+        flash(f'Error al agregar progreso: {e}', 'danger') # Traduzido
         logging.error(f"Erro DB ao adicionar progresso meta para schema {user_schema}: {e}")
     except Exception as e:
         if conn: conn.rollback()
-        flash(f'Erro inesperado ao adicionar progresso: {e}', 'danger')
+        flash(f'Error inesperado al agregar progreso: {e}', 'danger') # Traduzido
         logging.error(f"Erro inesperado ao adicionar progresso meta para schema {user_schema}: {e}")
     finally:
         if cur: cur.close()
@@ -2259,13 +2259,13 @@ def add_progresso_meta():
 @app.route('/relatorios')
 def relatorios():
     if 'user_assinatura_id' not in session:
-        flash('Você precisa fazer login para acessar esta página.', 'warning')
+        flash('Debes iniciar sesión para acceder a esta página.', 'warning') # Traduzido
         return redirect(url_for('auth.login')) # Atualizado
 
     user_schema = session.get('user_schema')
     user_nome = session.get('user_nome', session.get('user_email'))
     if not user_schema:
-        flash('Erro interno: Informações do usuário incompletas.', 'danger')
+        flash('Error interno: Información de usuario incompleta.', 'danger') # Traduzido
         session.clear()
         return redirect(url_for('auth.login')) # Atualizado
 
@@ -2285,10 +2285,10 @@ def relatorios():
 
     # Validação das datas
     try: data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
-    except ValueError: data_inicio = default_start_date; flash('Data de início inválida.', 'warning')
+    except ValueError: data_inicio = default_start_date; flash('Fecha de inicio inválida.', 'warning') # Traduzido
     try: data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
-    except ValueError: data_fim = default_end_date; flash('Data de fim inválida.', 'warning')
-    if data_fim < data_inicio: data_fim = data_inicio; flash('Data fim anterior a início.', 'warning')
+    except ValueError: data_fim = default_end_date; flash('Fecha de fin inválida.', 'warning') # Traduzido
+    if data_fim < data_inicio: data_fim = data_inicio; flash('La fecha de fin no puede ser anterior a la fecha de inicio.', 'warning') # Traduzido
 
     filtros_aplicados = {
         'data_inicio': data_inicio.strftime('%Y-%m-%d'),
@@ -2310,7 +2310,7 @@ def relatorios():
 
     conn = get_db_connection()
     if not conn:
-        flash('Erro de conexão com o banco.', 'danger')
+        flash('Error de conexión con la base de datos.', 'danger') # Traduzido
         return render_template('relatorios.html', user_nome=user_nome, dados_relatorio=dados_relatorio,
                                dados_grafico=dados_grafico, categorias_disponiveis=categorias_disponiveis,
                                filtros_aplicados=filtros_aplicados, lista_transacoes=lista_transacoes_paginada,
@@ -2361,7 +2361,7 @@ def relatorios():
             total_receitas_periodo_completo += rec['valor']
             if rec['fecha'] in receitas_diarias_completo:
                 receitas_diarias_completo[rec['fecha']] += rec['valor']
-        
+
         # Adicionar salário ao total de receitas do período completo - REMOVIDO
         # if salario_config_completo > 0:
         #     for dia1_completo in list(rrule(MONTHLY, dtstart=data_inicio, until=data_fim, bymonthday=1)):
@@ -2408,20 +2408,20 @@ def relatorios():
                 total_despesas_periodo_completo += gf_comp['valor']
                 if gf_comp['fecha_inicio'] in despesas_diarias_completo:
                     despesas_diarias_completo[gf_comp['fecha_inicio']] += gf_comp['valor']
-        
+
         dados_relatorio['total_receitas'] = total_receitas_periodo_completo
         dados_relatorio['total_despesas'] = total_despesas_periodo_completo
 
         dados_grafico['labels'] = [d.strftime('%d/%m') for d in dias_no_periodo_list]
         dados_grafico['datasets']['receitas'] = [float(receitas_diarias_completo.get(dia, 0)) for dia in dias_no_periodo_list]
         dados_grafico['datasets']['despesas'] = [float(despesas_diarias_completo.get(dia, 0)) for dia in dias_no_periodo_list]
-        
+
         # --- FIM DO CÁLCULO DE TOTAIS PARA GRÁFICOS E RESUMO ---
 
         # --- Início da Lógica de Busca Paginada para a Tabela ---
         query_params_paginado = []
         where_clauses_paginado = []
-        
+
         # Salário (para exibição na tabela de receitas, se aplicável) - REMOVIDO
         # salario_config_tabela = Decimal('0.00')
         # Reutiliza a query de config já feita, se não for problema de performance.
@@ -2434,7 +2434,7 @@ def relatorios():
             table_name = sql.Identifier('outras_receitas')
             date_column = sql.Identifier('fecha')
             select_cols = sql.SQL("id, fecha as data, descripcion, categoria, valor, 'receita' as tipo")
-            
+
             where_clauses_paginado.append(sql.SQL("{date_col} BETWEEN %s AND %s").format(date_col=date_column))
             query_params_paginado.extend([data_inicio, data_fim])
 
@@ -2443,17 +2443,17 @@ def relatorios():
                     where_clauses_paginado.append(sql.SQL("categoria = %s"))
                     query_params_paginado.append(categoria_filtro)
                 else: # Categoria inválida, não busca nada
-                    where_clauses_paginado.append(sql.SQL("1 = 0")) 
-            
+                    where_clauses_paginado.append(sql.SQL("1 = 0"))
+
             # Para receitas, precisamos considerar o salário que não está na tabela `outras_receitas`
             # A paginação SQL direta é complexa com UNION ou dados fora da tabela.
             # Vamos buscar todas as "outras_receitas" filtradas e adicionar o salário ANTES de paginar em Python.
             # Esta é uma exceção à paginação SQL direta para 'receitas' devido ao salário.
-            
+
             transacoes_raw_receitas = []
             if where_clauses_paginado: # Evita query se for "1=0"
                 query_det_receitas_paginado = sql.SQL("SELECT {cols} FROM {schema}.{table} WHERE {where} ORDER BY {date_col} DESC, id DESC").format(
-                    cols=select_cols, schema=sql.Identifier(user_schema), table=table_name, 
+                    cols=select_cols, schema=sql.Identifier(user_schema), table=table_name,
                     where=sql.SQL(' AND ').join(where_clauses_paginado), date_col=date_column
                 )
                 cur.execute(query_det_receitas_paginado, query_params_paginado)
@@ -2465,10 +2465,10 @@ def relatorios():
             #         dia_date_salario = dia1_salario.date()
             #         if data_inicio <= dia_date_salario <= data_fim:
             #             transacoes_raw_receitas.append({
-            #                 'id': None, 'data': dia_date_salario, 'descripcion': 'Salário Principal', 
+            #                 'id': None, 'data': dia_date_salario, 'descripcion': 'Salário Principal',
             #                 'categoria': 'Salário', 'valor': salario_config_tabela, 'tipo': 'receita'
             #             })
-            
+
             transacoes_raw_receitas.sort(key=lambda x: x['data'], reverse=True) # Ordena antes de paginar
             total_items = len(transacoes_raw_receitas)
             total_pages = ceil(total_items / ITEMS_PER_PAGE) if total_items > 0 else 1
@@ -2507,7 +2507,7 @@ def relatorios():
             query_det_gastos_var_paginado = sql.SQL(
                 "SELECT {cols} FROM {schema}.{table} WHERE {where} ORDER BY {date_col} DESC, id DESC LIMIT %s OFFSET %s"
             ).format(cols=select_cols, schema=sql.Identifier(user_schema), table=table_name, where=where_sql_paginado, date_col=date_column)
-            
+
             params_main_gv = query_params_paginado + [ITEMS_PER_PAGE, offset]
             cur.execute(query_det_gastos_var_paginado, params_main_gv)
             lista_transacoes_paginada = cur.fetchall()
@@ -2523,11 +2523,11 @@ def relatorios():
                     params_gf_pag.append(categoria_filtro)
                 else:
                     where_gf_pag.append(sql.SQL("1 = 0")) # Categoria inválida, não busca nada
-            
+
             query_base_fixos_pag = sql.SQL(
                 "SELECT id, fecha_inicio, descripcion, categoria, valor, recurrencia FROM {schema}.gastos_fixos WHERE {where}"
             ).format(schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gf_pag))
-            
+
             cur.execute(query_base_fixos_pag, params_gf_pag)
             gastos_fixos_ativos_pag = cur.fetchall()
 
@@ -2540,19 +2540,19 @@ def relatorios():
                             occ_date_pag = occ_dt_pag.date()
                             if data_inicio <= occ_date_pag <= data_fim:
                                 transacoes_raw_fixos.append({
-                                    'data': occ_date_pag, 'descripcion': gf_pag['descripcion'], 
-                                    'categoria': gf_pag['categoria'], 'valor': gf_pag['valor'], 
+                                    'data': occ_date_pag, 'descripcion': gf_pag['descripcion'],
+                                    'categoria': gf_pag['categoria'], 'valor': gf_pag['valor'],
                                     'tipo': 'gasto_fixo', 'id': gf_pag['id']
                                 })
                     except Exception as e_rrule_pag:
                         logging.error(f"Relatorios (paginado) Gasto Fixo ID {gf_pag['id']} rrule error: {e_rrule_pag}")
                 elif gf_pag['recurrencia'].lower().strip() in ['unico', 'único', 'única'] and data_inicio <= gf_pag['fecha_inicio'] <= data_fim:
                     transacoes_raw_fixos.append({
-                        'data': gf_pag['fecha_inicio'], 'descripcion': gf_pag['descripcion'], 
-                        'categoria': gf_pag['categoria'], 'valor': gf_pag['valor'], 
+                        'data': gf_pag['fecha_inicio'], 'descripcion': gf_pag['descripcion'],
+                        'categoria': gf_pag['categoria'], 'valor': gf_pag['valor'],
                         'tipo': 'gasto_fixo', 'id': gf_pag['id']
                     })
-            
+
             transacoes_raw_fixos.sort(key=lambda x: x['data'], reverse=True) # Ordena antes de paginar
             total_items = len(transacoes_raw_fixos)
             total_pages = ceil(total_items / ITEMS_PER_PAGE) if total_items > 0 else 1
@@ -2564,7 +2564,7 @@ def relatorios():
         # --- Fim da Lógica de Busca Paginada ---
 
         # Atribuições para dados_relatorio e dados_grafico já foram feitas acima com os totais completos.
-        
+
         # --- Calcular Comparativo com Mês Anterior (igual a antes) ---
         # O cálculo do comparativo deve usar os totais do período ATUAL COMPLETO
         # (total_receitas_periodo_completo ou total_despesas_periodo_completo)
@@ -2575,7 +2575,7 @@ def relatorios():
             delta_dias = (data_fim - data_inicio).days
             data_inicio_anterior = data_inicio - relativedelta(months=1)
             # data_fim_anterior = data_inicio_anterior + timedelta(days=delta_dias) # Esta linha pode ser problemática se o mês anterior for mais curto
-            
+
             # Ajusta data_fim_anterior para ser o mesmo dia do mês ou o último dia do mês anterior, o que vier primeiro
             try:
                 data_fim_anterior = data_inicio_anterior.replace(day=data_fim.day)
@@ -2610,13 +2610,13 @@ def relatorios():
                     res_rec_ant = cur.fetchone()
                     if res_rec_ant and res_rec_ant['total']:
                         total_anterior_calculado += res_rec_ant['total']
-                
+
                 # Adição de salário ao período anterior - REMOVIDO
                 # if salario_config_tabela > 0 and (categoria_filtro == 'todas' or categoria_filtro == 'Salário'):
                 #     for dia1_sal_ant in list(rrule(MONTHLY, dtstart=data_inicio_anterior, until=data_fim_anterior, bymonthday=1)):
                 #         if data_inicio_anterior <= dia1_sal_ant.date() <= data_fim_anterior:
                 #             total_anterior_calculado += salario_config_tabela
-            
+
             elif tipo_transacao_filtro == 'gastos_variaveis':
                 total_atual_comparativo = total_despesas_periodo_completo # Usa o total completo já calculado
                 where_gv_ant = [sql.SQL("data BETWEEN %s AND %s")]
@@ -2638,7 +2638,7 @@ def relatorios():
                 if categoria_filtro != 'todas':
                     where_gf_ant_base.append(sql.SQL("categoria = %s"))
                     params_gf_ant_base.append(categoria_filtro)
-                
+
                 query_gf_ant = sql.SQL("SELECT fecha_inicio, valor, recurrencia FROM {schema}.gastos_fixos WHERE {where}").format(
                     schema=sql.Identifier(user_schema), where=sql.SQL(' AND ').join(where_gf_ant_base))
                 cur.execute(query_gf_ant, params_gf_ant_base)
@@ -2652,7 +2652,7 @@ def relatorios():
                                 total_anterior_calculado += gf_ant['valor']
                     elif gf_ant['recurrencia'].lower().strip() in ['unico', 'único', 'única'] and data_inicio_anterior <= gf_ant['fecha_inicio'] <= data_fim_anterior:
                         total_anterior_calculado += gf_ant['valor']
-            
+
             if total_anterior_calculado > 0: # Evita divisão por zero
                 dados_relatorio['comparativo_valor_anterior'] = total_anterior_calculado
                 variacao = total_atual_comparativo - total_anterior_calculado
@@ -2665,59 +2665,22 @@ def relatorios():
         except Exception as e_comp:
             logging.warning(f"Erro ao calcular comparativo: {e_comp}")
             # Mantém os valores como None em caso de erro
-        
-        logging.info(f"Dados de relatório calculados para {user_schema}. Período: {data_inicio_str} a {data_fim_str}")
-
-    except psycopg2.Error as e:
-        logging.error(f"Erro DB /relatorios {user_schema}: {e}")
-        dados_grafico['datasets']['receitas'] = [float(receitas_diarias.get(dia, 0)) for dia in dias_no_periodo_list]
-        dados_grafico['datasets']['despesas'] = [float(despesas_diarias.get(dia, 0)) for dia in dias_no_periodo_list]
-
-        # --- Calcular Comparativo com Mês Anterior (igual a antes) ---
-        # (código do comparativo omitido para brevidade, mas permanece o mesmo)
-        dados_relatorio['comparativo_percentual'] = None; dados_relatorio['comparativo_valor_anterior'] = None
-        try:
-            delta_dias = (data_fim - data_inicio).days; data_inicio_anterior = data_inicio - relativedelta(months=1)
-            data_fim_anterior = data_inicio_anterior + timedelta(days=delta_dias)
-            ultimo_dia_mes_anterior = (data_inicio_anterior + relativedelta(months=1)).replace(day=1) - timedelta(days=1)
-            if data_fim_anterior > ultimo_dia_mes_anterior: data_fim_anterior = ultimo_dia_mes_anterior
-            if data_fim_anterior < data_inicio_anterior: data_fim_anterior = data_inicio_anterior
-            total_anterior = Decimal('0.00'); total_atual = Decimal('0.00')
-            # Lógica de cálculo do total_anterior para cada tipo (receitas, gastos_v, gastos_f)
-            # ... (código exato do comparativo aqui) ...
-            if tipo_transacao_filtro == 'receitas':
-                # ... cálculo total_anterior para receitas ...
-                total_atual = dados_relatorio['total_receitas']
-            elif tipo_transacao_filtro == 'gastos_variaveis':
-                 # ... cálculo total_anterior para gastos variáveis ...
-                total_atual = dados_relatorio['total_despesas']
-            elif tipo_transacao_filtro == 'gastos_fixos':
-                 # ... cálculo total_anterior para gastos fixos ...
-                total_atual = dados_relatorio['total_despesas']
-
-            if total_anterior > 0:
-                dados_relatorio['comparativo_valor_anterior'] = total_anterior
-                variacao = total_atual - total_anterior
-                percentual = (variacao / total_anterior) * 100
-                dados_relatorio['comparativo_percentual'] = percentual.quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
-            else:
-                dados_relatorio['comparativo_valor_anterior'] = total_anterior
-                dados_relatorio['comparativo_percentual'] = None
-        except Exception as e_comp:
-            logging.warning(f"Erro ao calcular comparativo: {e_comp}")
-            dados_relatorio['comparativo_percentual'] = None; dados_relatorio['comparativo_valor_anterior'] = None
-
 
         logging.info(f"Dados de relatório calculados para {user_schema}. Período: {data_inicio_str} a {data_fim_str}")
 
     except psycopg2.Error as e:
         logging.error(f"Erro DB /relatorios {user_schema}: {e}")
-        flash('Erro ao buscar dados para o relatório.', 'danger')
+        # Tentativa de popular dados do gráfico mesmo em caso de erro parcial
+        if 'receitas_diarias' in locals() and 'despesas_diarias' in locals() and 'dias_no_periodo_list' in locals():
+             dados_grafico['datasets']['receitas'] = [float(receitas_diarias.get(dia, 0)) for dia in dias_no_periodo_list]
+             dados_grafico['datasets']['despesas'] = [float(despesas_diarias.get(dia, 0)) for dia in dias_no_periodo_list]
+
+        flash('Error al buscar datos para el informe.', 'danger') # Traduzido
         # Resetar dados para evitar erro no template
         lista_transacoes_paginada = []; total_pages = 1; current_page = 1
     except Exception as e:
         logging.error(f"Erro inesperado /relatorios {user_schema}: {e}", exc_info=True)
-        flash('Erro inesperado ao gerar relatório.', 'danger')
+        flash('Error inesperado al generar el informe.', 'danger') # Traduzido
         lista_transacoes_paginada = []; total_pages = 1; current_page = 1
     finally:
         if cur: cur.close()

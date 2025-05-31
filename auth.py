@@ -8,13 +8,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 
 # Importação da conexão com o banco de dados de app.py
-from app import get_db_connection 
+from app import get_db_connection
 
 # Blueprint Configuration
 auth_bp = Blueprint(
     'auth', __name__,
-    template_folder='templates', 
-    static_folder='static' 
+    template_folder='templates',
+    static_folder='static'
 )
 
 # --- Funções Auxiliares de Autenticação ---
@@ -48,7 +48,7 @@ def login():
         email = request.form.get('email')
         senha = request.form.get('senha')
         if not email or not senha:
-            flash('Email e senha são obrigatórios.', 'danger')
+            flash('Correo electrónico y contraseña son obligatorios.', 'danger')
             return redirect(url_for('auth.login'))
         conn = get_db_connection()
         if conn:
@@ -74,21 +74,21 @@ def login():
                             return redirect(url_for('dashboard')) # 'dashboard' ainda está em app.py
                         else:
                             logging.error(f"Não foi possível gerar nome do schema para usuário {email}.")
-                            flash('Erro interno ao determinar o schema do usuário.', 'danger')
+                            flash('Error interno al determinar el esquema del usuario.', 'danger')
                     else:
                         logging.error(f"Assinatura ID {login_user['id_cliente_assinatura']} não encontrada para usuário {email}.")
-                        flash('Erro interno: dados da assinatura não encontrados.', 'danger')
+                        flash('Error interno: datos de la suscripción no encontrados.', 'danger')
                 else:
                     logging.warning(f"Tentativa de login falhou para: {email} (email não cadastrado ou senha incorreta)")
-                    flash('Email ou senha incorretos.', 'danger')
+                    flash('Correo electrónico o contraseña incorrectos.', 'danger')
             except psycopg2.Error as e:
                 logging.error(f"Erro de banco de dados durante o login para {email}: {e}")
-                flash('Erro no banco de dados durante o login.', 'danger')
+                flash('Error en la base de datos durante el inicio de sesión.', 'danger')
             finally:
                 if cur: cur.close()
                 if conn: conn.close()
         else:
-            flash('Não foi possível conectar ao banco de dados.', 'danger')
+            flash('No fue posible conectar con la base de datos.', 'danger')
         return render_template('login.html')
     return render_template('login.html')
 
@@ -102,16 +102,16 @@ def criar_conta():
         senha_confirmacao = request.form.get('senha_confirmacao')
 
         if not email or not senha or not senha_confirmacao:
-            flash('Preencha email, senha e confirmação.', 'danger')
+            flash('Completa el correo electrónico, la contraseña y la confirmación.', 'danger')
             return render_template('criar_conta.html', email_previo=email)
 
         if senha != senha_confirmacao:
-            flash('As senhas digitadas não conferem.', 'danger')
+            flash('Las contraseñas ingresadas no coinciden.', 'danger')
             return render_template('criar_conta.html', email_previo=email)
 
         conn = get_db_connection()
         if not conn:
-            flash('Erro crítico: Não foi possível conectar ao banco de dados.', 'danger')
+            flash('Error crítico: No fue posible conectar con la base de datos.', 'danger')
             return redirect(url_for('auth.login'))
 
         cur = None
@@ -119,14 +119,14 @@ def criar_conta():
             cur = conn.cursor(cursor_factory=DictCursor)
             cur.execute("SELECT id FROM clientes.dashboard_usuarios WHERE email = %s", (email,))
             if cur.fetchone():
-                flash('Este email já possui um acesso ao dashboard. Tente fazer login ou recuperar a senha.', 'warning')
+                flash('Este correo electrónico ya tiene acceso al panel. Intenta iniciar sesión o recuperar tu contraseña.', 'warning')
                 return redirect(url_for('auth.login'))
 
             cur.execute("SELECT id_interno FROM clientes.assinaturas WHERE email = %s LIMIT 1", (email,))
             assinatura = cur.fetchone()
 
             if not assinatura:
-                flash('Email não encontrado em nossas assinaturas ativas. Verifique se digitou corretamente ou entre em contato.', 'danger')
+                flash('Correo electrónico no encontrado en nuestras suscripciones activas. Verifica si lo escribiste correctamente o contáctanos.', 'danger')
                 return render_template('criar_conta.html', email_previo=email)
 
             id_cliente_assinatura_encontrado = assinatura['id_interno']
@@ -150,7 +150,7 @@ def criar_conta():
             return render_template('criar_conta.html', email_previo=email)
         except Exception as e:
             conn.rollback()
-            flash('Ocorreu um erro inesperado. Tente novamente mais tarde.', 'danger')
+            flash('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.', 'danger')
             logging.error(f"Erro inesperado (criar_conta) para {email}: {e}", exc_info=True)
             return render_template('criar_conta.html', email_previo=email)
         finally:
